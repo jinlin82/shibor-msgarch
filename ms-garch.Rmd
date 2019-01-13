@@ -1,16 +1,28 @@
 ---
-title: "MSGARCH"
-author: "Jin Lin"
-date: "2019年1月10日"
-output: html_document
+title: "基于MS-GARCH模型的上海银行同业拆借利率波动性分析"
+author: "Jin"
+date: "2019/1/14"
+output:
+  html_document:
+    theme: null
+    css: markdown.css
+    number_sections: yes
+  pdf_document:
+    keep_tex: yes
+    latex_engine: xelatex
+    pandoc_args: --listings
+  word_document: default
+bibliography: msgarch.bib
+csl: chinese-gb7714-2005-numeric.csl
 ---
+
 # 简介
 
 # 马尔科夫转换 GARCH 模型介绍
 
 # 实证分析
 
-```{r}
+```{r, eval=F, echo=F}
 ## 准备
 options(digtis=4)
 graphics.off()
