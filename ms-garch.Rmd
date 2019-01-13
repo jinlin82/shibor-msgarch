@@ -19,6 +19,7 @@ csl: chinese-gb7714-2005-numeric.csl
 
 # 简介
 [//]: # 问题界定，文献综述，文章结构简述
+参见文献[@xia2008]
 
 # 马尔科夫转换 GARCH 模型介绍
 
@@ -26,7 +27,7 @@ csl: chinese-gb7714-2005-numeric.csl
 ## 数据来源
 ## 描述性分析
 
-```{r, eval=F, echo=F}
+```{r, eval=F, echo=T}
 ## 准备
 options(digtis=4)
 graphics.off()
@@ -527,3 +528,6 @@ k
 ```
 
 # 结论
+
+# 参考文献
+[//]: # (\bibliography{msgarch})
