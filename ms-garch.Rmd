@@ -1,0 +1,500 @@
+---
+title: "MSGARCH"
+author: "Jin Lin"
+date: "2019年1月10日"
+output: html_document
+---
+
+```{r}
+library(zoo)
+library(forecast)
+library(tseries)
+library(xts)
+library(ggplot2)
+library(FinTS)
+library(moments)
+library(devtools)
+library(FinTS)
+library(MSGARCH)#当中GARCH的阶数如何选择
+rm(list=ls())
+#上海银行同业拆借率
+data=read.csv("F:\\shibor分析\\shibor原始数据\\shibor_data.csv",header=T)
+shibor<-data[,2]
+par(mfrow=c(1,2))
+shibor.date<-as.Date(data[,1])
+plot(shibor.date,shibor,type="l",xlab="日期",ylab="隔夜拆借利率")
+
+#计算收益率
+shibor.rt<-diff(log(shibor))
+
+#收益率转为时间序列LOGRt-LOGR(t-1) 
+plot(shibor.date[-1],shibor.rt,type="l",xlab="日期",ylab="对数收益率",cex.main=0.95,las=1)
+#显然具有波动应聚集的特征
+
+#描述统计量
+summary(shibor.rt)#最小值、最大值、均值
+sd(shibor.rt)#标准差
+skewness(shibor.rt)#偏态（右偏）
+kurtosis(shibor.rt)#峰态（尖峰）
+
+#绘制直方图
+qplot(shibor.rt,geom = "histogram",binwidth=0.02)
+
+#平稳性检验
+pp.test(shibor.rt)  #平稳
+
+#正态性检验
+jarque.bera.test(shibor.rt)    #JB检验非正态
+qqnorm(shibor.rt,main = "")
+qqline(shibor.rt)                #QQ图检验非正态
+
+#自相关性检验
+par(mfrow=c(1,2)) 
+acf(shibor.rt,main="",xlab="lag(a)",ylab="ACF")#画自相关图
+title(main = "(a)the ACF of Return",cex.main=0.95)
+acf(shibor.rt,plot = F,lag.max = 35)
+pacf(shibor.rt,main="",xlab="Lag(b)",ylab="PACF",las=1)#画偏自相关图
+title(main="(b)the PACF of Return",cex.main=0.95)
+pacf(shibor.rt,plot = F,lag.max = 35)
+
+#收益率平方的自相关性（应该是一阶差分序列）
+par(mfrow=c(1,2))
+rt.square<-shibor.rt^2
+acf(rt.square,main="",xlab="lag(c)",ylab="ACF",las=1)#画自相关图
+title(main = "(c)the ACF of Return Square",cex.main=0.95)
+pacf(rt.square,main="",xlab="Lag(d)",ylab="PACF",las=1)#画偏自相关图
+title(main = "(d)the PACF of Return Square",cex.main=0.95)
+Box.test(rt.square,lag = 10,type = "Ljung")
+Box.test(shibor.rt,lag=10,type = "Ljung")
+
+#ARCH效应检验
+ArchTest(shibor.rt,lag=12)  #存在ARCH效应
+
+#拟合GARCH
+library(timeDate)
+library(timeSeries)
+library(fBasics)
+library(fGarch)
+
+#假定条件分布为正态分布
+##拟合GARCH(1,1)模型
+m1<-garchFit(~1+garch(1,1),data = shibor.rt,trace = F)
+summary(m1)
+##拟合GARCH(2,1)模型
+m2<-garchFit(~1+garch(2,1),data = shibor.rt,trace = F)
+summary(m2)
+##拟合GARCH(1,2)模型
+m3<-garchFit(~1+garch(1,2),data = shibor.rt,trace = F)
+summary(m3)
+##拟合GARCH(2,2)模型
+m4<-garchFit(~1+garch(2,2),data = shibor.rt,trace = F)
+summary(m4)#所估参数出现空值，舍去
+
+#假定条件分布为t分布
+##拟合GARCH(1,1)模型
+m5<-garchFit(formula = ~1+garch(1,1),data = shibor.rt,trace = F,cond.dist = "std")
+summary(m5)
+##拟合GARCH(2,1)模型
+m6<-garchFit(formula = ~1+garch(2,1),data = shibor.rt,trace = F,cond.dist = "std")
+summary(m6)#所估参数出现空值，舍去
+##拟合GARCH(1,2)模型
+m7<-garchFit(formula = ~1+garch(1,2),data = shibor.rt,trace = F,cond.dist = "std")
+summary(m7)
+##拟合GARCH(2,2)模型
+m8<-garchFit(formula = ~1+garch(2,2),data = shibor.rt,trace = F,cond.dist = "std")
+summary(m8)#所估参数出现空值，舍去
+
+#拟合混合分布GARCH
+##两阶段混合
+###混合形式为sGARCH、sGARCH
+####混合分布的构成为norm、norm
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("norm", "norm")))
+m9=FitML(spec,shibor.rt)
+summary(m9)
+m9.res=c("m9",m9$loglik,summary(m9)$AIC,summary(m9)$BIC)
+
+####混合分布的构成为norm、snorm
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("norm", "snorm")))
+m10=FitML(spec,shibor.rt)
+summary(m10)
+m10.res=c("m10",m10$loglik,summary(m10)$AIC,summary(m10)$BIC)
+
+####混合分布的构成为norm、std
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("norm", "std")))
+m11=FitML(spec,shibor.rt)
+summary(m11)
+m11.res=c("m11",m11$loglik,summary(m11)$AIC,summary(m11)$BIC)
+
+####混合分布的构成为norm、sstd
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("norm", "sstd")))
+m12=FitML(spec,shibor.rt)
+summary(m12)
+m12.res=c("m12",m12$loglik,summary(m12)$AIC,summary(m12)$BIC)
+
+####混合分布的构成为norm、ged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("norm", "ged")))
+m13=FitML(spec,shibor.rt)
+summary(m13)
+m13.res=c("m13",m13$loglik,summary(m13)$AIC,summary(m13)$BIC)
+
+####混合分布的构成为norm、sged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("norm", "sged")))
+m14=FitML(spec,shibor.rt)
+summary(m14)
+m14.res=c("m14",m14$loglik,summary(m14)$AIC,summary(m14)$BIC)
+
+####混合分布的构成为snorm、snorm
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("snorm", "snorm")))
+m15=FitML(spec,shibor.rt)
+summary(m15)
+m15.res=c("m15",m15$loglik,summary(m15)$AIC,summary(m15)$BIC)
+
+####混合分布的构成为snorm、std
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("snorm", "std")))
+m16=FitML(spec,shibor.rt)
+summary(m16)
+m16.res=c("m16",m16$loglik,summary(m16)$AIC,summary(m16)$BIC)
+
+####混合分布的构成为snorm、sstd
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("snorm", "sstd")))
+m17=FitML(spec,shibor.rt)
+summary(m17)
+m17.res=c("m17",m17$loglik,summary(m17)$AIC,summary(m17)$BIC)
+
+####混合分布的构成为snorm、ged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("snorm", "ged")))
+m18=FitML(spec,shibor.rt)
+summary(m18)
+m18.res=c("m18",m18$loglik,summary(m18)$AIC,summary(m18)$BIC)
+
+####混合分布的构成为snorm、sged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("snorm", "sged")))
+m19=FitML(spec,shibor.rt)
+summary(m19)
+m19.res=c("m19",m19$loglik,summary(m19)$AIC,summary(m19)$BIC)
+
+####混合分布的构成为std、std
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("std", "std")))
+m20=FitML(spec,shibor.rt)
+summary(m20)
+m20.res=c("m20",m20$loglik,summary(m20)$AIC,summary(m20)$BIC)
+
+####混合分布的构成为std、sstd
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("std", "sstd")))
+m21=FitML(spec,shibor.rt)
+summary(m21)
+m21.res=c("m21",m21$loglik,summary(m21)$AIC,summary(m21)$BIC)
+
+####混合分布的构成为std、ged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("std", "ged")))
+m22=FitML(spec,shibor.rt)
+summary(m22)
+m22.res=c("m22",m22$loglik,summary(m22)$AIC,summary(m22)$BIC)
+
+####混合分布的构成为std、sged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("std", "sged")))
+m23=FitML(spec,shibor.rt)
+summary(m23)
+m23.res=c("m23",m23$loglik,summary(m23)$AIC,summary(m23)$BIC)
+
+####混合分布的构成为sstd、sstd
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("sstd", "sstd")))
+m24=FitML(spec,shibor.rt)
+summary(m24)
+m24.res=c("m24",m24$loglik,summary(m24)$AIC,summary(m24)$BIC)
+
+####混合分布的构成为sstd、ged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("sstd", "ged")))
+m25=FitML(spec,shibor.rt)
+summary(m25)
+m25.res=c("m25",m25$loglik,summary(m25)$AIC,summary(m25)$BIC)
+
+####混合分布的构成为sstd、sged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("sstd", "sged")))
+m26=FitML(spec,shibor.rt)
+summary(m26)
+m26.res=c("m26",m26$loglik,summary(m26)$AIC,summary(m26)$BIC)
+
+####混合分布的构成为ged、ged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("ged", "ged")))
+m27=FitML(spec,shibor.rt)
+summary(m27)
+m27.res=c("m27",m27$loglik,summary(m27)$AIC,summary(m27)$BIC)
+
+####混合分布的构成为ged、sged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("ged", "sged")))
+m28=FitML(spec,shibor.rt)
+summary(m28)
+m28.res=c("m28",m28$loglik,summary(m28)$AIC,summary(m28)$BIC)
+
+####混合分布的构成为sged、sged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("sged", "sged")))
+m29=FitML(spec,shibor.rt)
+summary(m29)
+m29.res=c("m29",m29$loglik,summary(m29)$AIC,summary(m29)$BIC)
+
+##三阶段混合
+###混合形式为sGARCH、sGARCH、sGARCH
+####混合分布的构成为norm、norm、norm
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("norm", "norm","norm")))
+m30=FitML(spec,shibor.rt)
+summary(m30)
+m30.res=c("m30",m30$loglik,summary(m30)$AIC,summary(m30)$BIC)
+
+####混合分布的构成为snorm、snorm、snorm
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("snorm", "snorm","snorm")))
+m31=FitML(spec,shibor.rt)
+summary(m31)
+m31.res=c("m31",m31$loglik,summary(m31)$AIC,summary(m31)$BIC)
+
+####混合分布的构成为std、std、std
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("std", "std","std")))
+m32=FitML(spec,shibor.rt)
+summary(m32)
+m32.res=c("m32",m32$loglik,summary(m32)$AIC,summary(m32)$BIC)
+
+####混合分布的构成为sstd、sstd、sstd
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("sstd", "sstd","sstd")))
+m33=FitML(spec,shibor.rt)
+summary(m33)
+m33.res=c("m33",m33$loglik,summary(m33)$AIC,summary(m33)$BIC)
+
+####混合分布的构成为ged、ged、ged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("ged", "ged","ged")))
+m34=FitML(spec,shibor.rt)
+summary(m34)
+m34.res=c("m34",m34$loglik,summary(m34)$AIC,summary(m34)$BIC)
+
+####混合分布的构成为sged、sged、sged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("sged", "sged","sged")))
+m35=FitML(spec,shibor.rt)
+summary(m35)
+m35.res=c("m35",m35$loglik,summary(m35)$AIC,summary(m35)$BIC)
+
+##四阶段混合
+###混合形式为sGARCH、sGARCH、sGARCH、sGARCH
+####混合分布的构成为norm、norm、norm、norm
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("norm", "norm","norm","norm")))
+m36=FitML(spec,shibor.rt)
+summary(m36)
+m36.res=c("m36",m36$loglik,summary(m36)$AIC,summary(m36)$BIC)
+
+####混合分布的构成为snorm、snorm、snorm、snorm
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("snorm", "snorm","snorm","snorm")))
+m37=FitML(spec,shibor.rt)
+summary(m37)
+m37.res=c("m37",m37$loglik,summary(m37)$AIC,summary(m37)$BIC)
+
+####混合分布的构成为std、std、std、std
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("std", "std","std","std")))
+m38=FitML(spec,shibor.rt)
+summary(m38)
+m38.res=c("m38",m38$loglik,summary(m38)$AIC,summary(m38)$BIC)
+
+####混合分布的构成为sstd、sstd、sstd、sstd
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("sstd", "sstd","sstd","sstd")))
+m39=FitML(spec,shibor.rt)
+summary(m39)
+m39.res=c("m39",m39$loglik,summary(m39)$AIC,summary(m39)$BIC)
+
+####混合分布的构成为ged、ged、ged、ged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("ged", "ged","ged","ged")))
+m40=FitML(spec,shibor.rt)
+summary(m40)
+m40.res=c("m40",m40$loglik,summary(m40)$AIC,summary(m40)$BIC)
+
+####混合分布的构成为sged、sged、sged、sged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("sged", "sged","sged","sged")))
+m41=FitML(spec,shibor.rt)
+summary(m41)
+m41.res=c("m41",m41$loglik,summary(m41)$AIC,summary(m41)$BIC)
+
+##两阶段混合,switch.spec=list(do.mix=T)
+###混合形式为sGARCH、sGARCH
+####混合分布的构成为norm、norm
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("norm", "norm")),switch.spec=list(do.mix=T))
+m42=FitML(spec,shibor.rt)
+summary(m42)
+m42.res=c("m42",m42$loglik,summary(m42)$AIC,summary(m42)$BIC)
+
+####混合分布的构成为snorm、snorm
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("snorm", "snorm")),switch.spec=list(do.mix=T))
+m43=FitML(spec,shibor.rt)
+summary(m43)
+m43.res=c("m43",m43$loglik,summary(m43)$AIC,summary(m43)$BIC)
+
+####混合分布的构成为std、std
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("std", "std")),switch.spec=list(do.mix=T))
+m44=FitML(spec,shibor.rt)
+summary(m44)
+m44.res=c("m44",m44$loglik,summary(m44)$AIC,summary(m44)$BIC)
+
+####混合分布的构成为sstd、sstd
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("sstd", "sstd")),switch.spec=list(do.mix=T))
+m45=FitML(spec,shibor.rt)
+summary(m45)
+m45.res=c("m45",m45$loglik,summary(m45)$AIC,summary(m45)$BIC)
+
+####混合分布的构成为ged、ged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("ged", "ged")),switch.spec=list(do.mix=T))
+m46=FitML(spec,shibor.rt)
+summary(m46)
+m46.res=c("m46",m46$loglik,summary(m46)$AIC,summary(m46)$BIC)
+
+####混合分布的构成为sged、sged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH")),distribution.spec = list(distribution=c("sged", "sged")),switch.spec=list(do.mix=T))
+m47=FitML(spec,shibor.rt)
+summary(m47)
+m47.res=c("m47",m47$loglik,summary(m47)$AIC,summary(m47)$BIC)
+
+##三阶段混合,switch.spec=list(do.mix=T)
+###混合形式为sGARCH、sGARCH、sGARCH
+####混合分布的构成为norm、norm、norm
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("norm", "norm","norm")),switch.spec=list(do.mix=T))
+m48=FitML(spec,shibor.rt)
+summary(m48)
+m48.res=c("m48",m48$loglik,summary(m48)$AIC,summary(m48)$BIC)
+
+####混合分布的构成为snorm、snorm、snorm
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("snorm", "snorm","snorm")),switch.spec=list(do.mix=T))
+m49=FitML(spec,shibor.rt)
+summary(m49)
+m49.res=c("m49",m49$loglik,summary(m49)$AIC,summary(m49)$BIC)
+
+####混合分布的构成为std、std、std
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("std", "std","std")),switch.spec=list(do.mix=T))
+m50=FitML(spec,shibor.rt)
+summary(m50)
+m50.res=c("m50",m50$loglik,summary(m50)$AIC,summary(m50)$BIC)
+
+####混合分布的构成为sstd、sstd、sstd
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("sstd", "sstd","sstd")),switch.spec=list(do.mix=T))
+m51=FitML(spec,shibor.rt)
+summary(m51)
+m51.res=c("m51",m51$loglik,summary(m51)$AIC,summary(m51)$BIC)
+
+####混合分布的构成为ged、ged、ged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("ged", "ged","ged")),switch.spec=list(do.mix=T))
+m52=FitML(spec,shibor.rt)
+summary(m52)
+m52.res=c("m52",m52$loglik,summary(m52)$AIC,summary(m52)$BIC)
+
+####混合分布的构成为sged、sged、sged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("sged", "sged","sged")),switch.spec=list(do.mix=T))
+m53=FitML(spec,shibor.rt)
+summary(m53)
+m53.res=c("m53",m53$loglik,summary(m53)$AIC,summary(m53)$BIC)
+
+##四阶段混合,switch.spec=list(do.mix=T)
+###混合形式为sGARCH、sGARCH、sGARCH、sGARCH
+####混合分布的构成为norm、norm、norm、norm
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("norm", "norm","norm","norm")),switch.spec=list(do.mix=T))
+m54=FitML(spec,shibor.rt)
+summary(m54)
+m54.res=c("m54",m54$loglik,summary(m54)$AIC,summary(m54)$BIC)
+
+####混合分布的构成为snorm、snorm、snorm、snorm
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("snorm", "snorm","snorm","snorm")),switch.spec=list(do.mix=T))
+m55=FitML(spec,shibor.rt)
+summary(m55)
+m55.res=c("m55",m55$loglik,summary(m55)$AIC,summary(m55)$BIC)
+
+####混合分布的构成为std、std、std、std
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("std", "std","std","std")),switch.spec=list(do.mix=T))
+m56=FitML(spec,shibor.rt)
+summary(m56)
+m56.res=c("m56",m56$loglik,summary(m56)$AIC,summary(m56)$BIC)
+
+####混合分布的构成为sstd、sstd、sstd、sstd
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("sstd", "sstd","sstd","sstd")),switch.spec=list(do.mix=T))
+m57=FitML(spec,shibor.rt)
+summary(m57)
+m57.res=c("m57",m57$loglik,summary(m57)$AIC,summary(m57)$BIC)
+
+####混合分布的构成为ged、ged、ged、ged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("ged", "ged","ged","ged")),switch.spec=list(do.mix=T))
+m58=FitML(spec,shibor.rt)
+summary(m58)
+m58.res=c("m58",m58$loglik,summary(m58)$AIC,summary(m58)$BIC)
+
+####混合分布的构成为sged、sged、sged、sged
+spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("sged", "sged","sged","sged")),switch.spec=list(do.mix=T))
+m59=FitML(spec,shibor.rt)
+summary(m59)
+m59.res=c("m59",m59$loglik,summary(m59)$AIC,summary(m59)$BIC)
+
+res=data.frame(m9.res,m10.res,m11.res,m12.res,m13.res,m14.res,m15.res,m16.res,m17.res,m18.res,m19.res,m20.res,m21.res,m22.res,m23.res,m24.res,m25.res,m26.res,m27.res,m28.res,m29.res,m30.res,m31.res,m32.res,m33.res,m34.res,m35.res,m37.res,m38.res,m39.res,m40.res,m41.res,m42.res,m43.res,m44.res,m45.res,m46.res,m47.res,m48.res,m49.res,m50.res,m51.res,m52.res,m53.res,m54.res,m55.res,m56.res,m57.res,m58.res,m59.res)
+View(res)
+#以上模型根据AIC和BIC准则，选择41、53
+
+auto.arima(shibor.rt)
+library(rugarch)
+spec <- ugarchspec(variance.model = list(model = "fGARCH", 
+                                         garchOrder = c(1, 1), 
+                                         submodel = "TGARCH" ,
+                                         external.regressors = NULL, 
+                                         variance.targeting = FALSE), 
+                   mean.model     = list(armaOrder = c(1, 0), 
+                                         external.regressors = NULL),
+                   distribution.model = "norm" ,
+                   start.pars = list(),
+                   fixed.pars = list())
+
+garchm39 <- ugarchfit(spec = spec, data = shibor.rt, solver.control = list(trace=0))
+garchm39@model
+
+
+
+realdata=read.csv("C:\\Users\\Administrator\\Documents\\WeChat Files\\g18434365732_\\Files\\金\\论文\\回测数据.csv",header=T)
+shibor2<-realdata[,2]
+shibor.date2<-as.Date(realdata[,1])
+par(mfrow=c(1,2)) 
+plot(shibor.date2,shibor2,type="l",xlab="日期",ylab="隔夜拆借利率")
+n2<-length(shibor2)
+shibor.rt2<-log(shibor2[2:n2])-log(shibor2[1:n2-1])
+#收益率转为时间序列LOGRt-LOGR(t-1) 
+rt2<-ts(shibor.rt2)
+plot(rt2,type="l",xlab="日期",ylab="对数收益率",cex.main=0.95,las=1)
+risk38<- Risk(m38, alpha = c(0.01, 0.05), nahead = 253)
+plot(risk38,xlim=c(0,253))
+lines(rt2)
+
+risk27<- Risk(m27, alpha = c(0.01, 0.05), nahead = 253)
+mode(risk27)
+mode(risk27[[1]])
+a=as.matrix(risk27[[1]])
+a[,2]
+
+
+a=as.matrix(risk38[[1]])
+a[,2]
+k=0
+for(i in 1:253){
+  if(a[i,2]<rt2[i]){
+    k=k+1
+  }
+}
+k
+plot(risk27,xlim=c(1,253))
+lines(rt2)
+predict(m36,nahead=5)
+a=State(m27)
+State(m27,par,realdata)
+par=c(0.0000,0.0485,0.9483,2.6745,0.8013,0.0000,0.9998,0.0000,7.4986,1.0849,0.0037,0.9997,
+  0.0000,2.4191,1.8126,0.8654,0.0968,0.1587,0.8201,0.0000,0.2068)
+
+risk20<- Risk(m20, alpha = c(0.01, 0.05), nahead = 253)
+plot(risk20,xlim=c(0,253))
+lines(rt2)
+a=as.matrix(risk20[[1]])
+a[,2]
+k=0
+for(i in 1:253){
+  if(a[i,2]<rt2[i]){
+    k=k+1
+  }
+}
+k
+```
+
+
