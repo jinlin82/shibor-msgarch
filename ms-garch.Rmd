@@ -6,6 +6,12 @@ output: html_document
 ---
 
 ```{r}
+## 准备
+options(digtis=4)
+graphics.off()
+rm(list=ls())
+
+## 加载包
 library(zoo)
 library(forecast)
 library(tseries)
@@ -16,7 +22,9 @@ library(moments)
 library(devtools)
 library(FinTS)
 library(MSGARCH)#当中GARCH的阶数如何选择
-rm(list=ls())
+
+
+## 载入数据
 #上海银行同业拆借率
 data=read.csv("F:\\shibor分析\\shibor原始数据\\shibor_data.csv",header=T)
 shibor<-data[,2]
