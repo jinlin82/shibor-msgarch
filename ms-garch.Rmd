@@ -4,6 +4,11 @@ author: "Jin Lin"
 date: "2019年1月10日"
 output: html_document
 ---
+# 简介
+
+# 马尔科夫转换 GARCH 模型介绍
+
+# 实证分析
 
 ```{r}
 ## 准备
@@ -505,4 +510,4 @@ for(i in 1:253){
 k
 ```
 
-
+# 结论
