@@ -4,6 +4,7 @@ author: "Jin"
 date: "2019/1/14"
 output:
   html_document:
+    highlight: haddock
     theme: null
     css: markdown.css
     number_sections: yes
