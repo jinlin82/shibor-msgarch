@@ -47,8 +47,9 @@ border-bottom: 4px solid #f7f7f7;
 }
 
 .title{
+    font-weight:bold;
     font-size:1.8em;
-    text-align: center	
+    text-align: center;	
 }
 
 .author{
@@ -61,9 +62,9 @@ text-align: center
 
 
 h4,h5,h6{ font-weight: bold; }
-h1{ font-size:1.6em; }
-h2{ font-size:1.4em; }
-h3{ font-size:1.2em; }
+h1{ font-size:1.5em; }
+h2{ font-size:1.3em; }
+h3{ font-size:1.1em; }
 h4{ font-size:1em; }
 h5{ font-size:1em; }
 h6{ font-size:0.9em; }
