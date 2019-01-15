@@ -31,6 +31,10 @@ text-indent:2em;
 margin:1em 0;
 }
 
+sup{
+color:purple;
+}
+
 /* ----------------------标题设置---------------------- */
 h1,h2,h3,h4,h5,h6{
 font-weight:normal;
@@ -54,6 +58,7 @@ text-align: center
 text-align: center	
 }
 
+
 h4,h5,h6{ font-weight: bold; }
 h1{ font-size:1.8em; }
 h2{ font-size:1.5em; }
@@ -61,6 +66,7 @@ h3{ font-size:1.2em; }
 h4{ font-size:1em; }
 h5{ font-size:1em; }
 h6{ font-size:0.9em; }
+
 
 /* ---------------------代码设置--------------------- */
 blockquote{
@@ -89,7 +95,7 @@ ins { background: #ff9; color: #000; text-decoration: none; }
 
 mark { background: #ff0; color: #000; font-style: italic; font-weight: bold; }
 
-sub, sup { font-size: 75%; line-height: 0; position: relative; vertical-align: baseline; }
+sub, sup { font-size: 75%; line-height: 0; position: relative; vertical-align: baseline; color:blue;}
 sup { top: -0.5em; }
 sub { bottom: -0.25em; }
 
