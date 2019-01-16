@@ -1,7 +1,7 @@
 ---
 title: "基于MS-GARCH模型的上海银行同业拆借利率波动性分析"
 author: "Jin"
-date: "2019/1/14"
+date: "2019-01-14"
 output:
   html_document:
     highlight: haddock
@@ -14,7 +14,8 @@ output:
     latex_engine: xelatex
     pandoc_args: --listings
     md_extensions: +east_asian_line_breaks
-  word_document: 
+  word_document:
+    reference_docx: word-styles-01.docx
     md_extensions: +east_asian_line_breaks
 bibliography: msgarch.bib
 csl: chinese-gb7714-2005-numeric.csl
@@ -45,7 +46,7 @@ Black、Scholes等(1973) 认为短期利率具有对数正态分布的特性，�
 较好的效果，此模型能够有效克服金融时间序列数据的高峰厚尾与波动集群的特性
 [@Bollerslev1986]。Nelson(1991)、Zakoian(1994)相继在前人基础上，研究出GARCH族扩
 展模型，如TGARCH、EGARCH，这也是目前研究利率波动性问题的主流模型
-[@Nelson1991][@Zakoian1994]。Mittnik、Paolella(2000)推广了GARCH模型的残差分布，
+[@Nelson1991;@Zakoian1994]。Mittnik、Paolella(2000)推广了GARCH模型的残差分布，
 使用t分布和GED分布应用于VaR的计算中，最终结果显示推广分布下有更好的拟合与预测效
 果[@Mittnik2000]。Dias、Embrechts(2004)提出GARCH-copula模型，在GARCH模型的基础上，
 再使用copula函数研究多个金融时间序列之间的相关结构。Xu, and Wirjanto （2010 ）研
@@ -91,6 +92,7 @@ Mixing-GARCH混合分布和Markov-switching-GARCH马尔科夫转换模型对SHIB
 终结论。
 
 # 马尔科夫转换 GARCH 模型介绍
+
 
 # 实证分析
 ## 数据来源
