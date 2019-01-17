@@ -108,7 +108,7 @@ $${z_t} = \left\{ {\begin{array}{*{20}{c}}
 {{\alpha _0} + \beta {z_{t - 1}} + {\varepsilon _t},              {s_t} = 0,}\\
 {{\alpha _0} + {\alpha _1} + \beta {z_{t - 1}} + {\varepsilon _t},{s_t} = 1,}
 \end{array}} \right. \tag{1}$$
-式中 $\left| \beta  \right| < 1$ , ${{\varepsilon _t}}$ 是均值为0，方差为1的独立同分布随机变量序列。 ${{s_t}}$ 遵循具有以下转移矩阵的一阶马尔科夫链。
+式中 $\left| \beta  \right| < 1$ , ${{\varepsilon _t}}$ 是均值为0，方差为1的独立同分布随机变量序列。${{s_t}}$ 遵循具有以下转移矩阵的一阶马尔科夫链。
 $$P = \left[ {\begin{array}{*{20}{c}}
 {IP\left( {{s_t} = 0\left| {{s_{t - 1}} = 0} \right.} \right)}&{IP\left( {{s_t} = 1\left| {{s_{t - 1}} = 0} \right.} \right)}\\
 {IP\left( {{s_t} = 0\left| {{s_{t - 1}} = 1} \right.} \right)}&{IP\left( {{s_t} = 1\left| {{s_{t - 1}} = 1} \right.} \right)}
@@ -116,7 +116,7 @@ $$P = \left[ {\begin{array}{*{20}{c}}
 {{p_{00}}}&{{p_{01}}}\\
 {{p_{10}}}&{{p_{11}}}
 \end{array}} \right] \tag{2}$$
- ${p_{i,j}}$ 表示从 ${s_{t - 1}} = i$ 转移到 ${s_t} = j$ 的概率，并且 $0 < {p_{i,j}} < 1$ , ${p_{i0}} + {p_{i1}} = 1$ 。该转移矩阵控制着状态变量 ${s_t} = j$ 的变化过程。
+ ${p_{i,j}}(i,j = 0,1)$ 表示从 ${s_{t - 1}} = i$ 转移到 ${s_t} = j$ 的概率，并且 $0 < {p_{i,j}} < 1$ , ${p_{i0}} + {p_{i1}} = 1$ 。该转移矩阵控制着状态变量 ${s_t} = j$ 的变化过程。
 当 ${s_t} = 0$ 时,(1)式是均值为 ${\alpha _0}/\left( {1 - \beta } \right)$ 的AR(1)过程，当 ${s_t} = 1$ 时，(1)式转化成均值为 ${\alpha _0} + {\alpha _1}/\left( {1 - \beta } \right)$ 的AR(1)过程。因此, ${z_t}$ 由两个不同分布决定，并且 ${s_t}$ 控制着两个分布的转换。如此,(1)式这样含有马尔科夫状态变量的模型就叫马尔科夫转换模型。
 
 ## GARCH(1,1)
