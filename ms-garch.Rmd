@@ -106,13 +106,17 @@ GARCH模型，会使模型与真实情况相差较大，高估同业拆借市场
 马尔科夫转换模型能够将金融时间序列划分为若干个区间，分别研究不同区间下的数据特
 征，可以更准确地描述金融市场真实情况。一般化的马尔科夫转换模型可以表示如下：
 
-$${Y_t} = \beta _0^{{s_t}} + \sum\limits_{i = 1}^{{n_1}} {\beta _i^{{s_t}}{X_i}}  + \sum\limits_{i = 1}^{{n_2}} {\beta _i^{{s_t}}{Y_{t - j}}}  + {\varepsilon ^{{s_t}}},\;\;{\varepsilon ^{{s_t}}} \sim NID\left( {0,{\sigma ^{{s_t}}} \right)\tag{1}$$
+$${Y_t} = \beta_0^{(s_t)}+\sum\limits_{i = 1}^{{n_1}} {\beta _i^{(s_t)}{X_i}}  + 
+\sum\limits_{i = 1}^{{n_2}} {\beta _i^{(s_t)}{Y_{t - j}}}  + {\varepsilon ^{(s_t)}},\quad 
+\varepsilon ^{(s_t)} \sim N\left(0,\sigma ^{(s_t)} \right)
+$$
 
 式中 ${y_t:t=1,2,…,T}$ 表示金融时间序列， $k$ 表示区制的个数，$n_1$ , $n_2$
 分别表示外生变量和自回归的阶数。设共有 $k$ 个区制， $s_t$ 表示 $y_t$ 所处的
 区制的状态。不同区制的转移遵循具有以下转移矩阵的马尔科夫随机过程：
 
-$${P_{ij}} = \Pr \left( {{S_{t + 1}} = i\left| {{S_t} = j} \right.} \right)且\sum\limits_{i = 1}^k {{P_{ij}}}  = 1\tag{2}$$
+$${P_{ij}} = \Pr \left( {{S_{t + 1}} = i\left| {{(s_t)} = j} \right.} \right)
+且\sum\limits_{i = 1}^k {{P_{ij}}}  = 1$$
 
 其中 ${P_{i,j}}$ 表示从状态 $j$ 转移到状态 $i$ 的概率。
 
@@ -122,11 +126,12 @@ $${P_{ij}} = \Pr \left( {{S_{t + 1}} = i\left| {{S_t} = j} \right.} \right)且\s
 使结果失真，为此Bollerslev在Engle的相关研究上提出了GARCH模型以解决类似问题，
 该模型结构如下：
 
-$$\left\{ {\begin{array}{*{20}{c}}
+$$\left\{ {\begin{array}{}
 {{y_t} = f\left( {t,{y_{t - 1}},{y_{t - 2}}, \cdots } \right) + {\varepsilon _t}}\\
 {{\varepsilon _t} = \sqrt {{h_t}} {e_t}}\\
-{{h_t} = \omega  + \sum\limits_{i = 1}^p {{\alpha _i}{h_{t - i}}}  + \sum\limits_{j = 1}^q {{\beta _j}{\varepsilon _{t - j}}} }
-\end{array}} \right.\tag{3}$$
+{{h_t} = \omega  + \sum\limits_{i = 1}^p {{\alpha _i}{h_{t - i}}}  + 
+\sum\limits_{j = 1}^q {{\beta _j}{\varepsilon _{t - j}}} }
+\end{array}} \right.$$
 
 其中， ${y_t}$ 表示时刻 $t$ 的收益率, $h_t$ 表示条件方差， ${e_t}$ 是均值
 为0，方差相等的独立同分布随机变量序列。第一个方程为均值方程，用来描述收益
@@ -136,31 +141,34 @@ $$\left\{ {\begin{array}{*{20}{c}}
 ## MS-GARCH模型介绍
 
 设 ${y_t:t=1,2,…,T}$ 表示金融时间序列，共有 $k$ 个区制, $y_t$ 所处的区制
-用 $s_t$ 表示，即 ${s_t} \in \left( {1,2, \cdots ,k} \right)$ 。若 $y_t$ 满足
+用 $s_t$ 表示，即 ${(s_t)} \in \left( {1,2, \cdots ,k} \right)$ 。若 $y_t$ 满足
 
-$${y_t} = {\mu _{{s_t}}} + {\varepsilon _{{s_t}t}}\tag4$$
+$${y_t} = {\mu _{(s_t)}} + {\varepsilon _{{(s_t)}t}}$$
 
-其中 $\mu _{{s_t}}$ 表示 $y_t$ 在状态 $s_t$ 下的均值方程
+其中 $\mu _{(s_t)}$ 表示 $y_t$ 在状态 $s_t$ 下的均值方程
 
-$${\mu _{{s_t}}} = {\phi _{{s_t}0}} + {\phi _{{s_t}1}}{y_{t - 1}} +  \cdots  + {\phi _{{s_t}q}}{y_{t - q}}\tag5$$
+$${\mu _{(s_t)}} = {\phi _{{(s_t)}0}} + {\phi _{{(s_t)}1}}{y_{t - 1}} + 
+\cdots  + {\phi _{{(s_t)}q}}{y_{t - q}}$$
 
-$\varepsilon _{{s_t}t}$ 表示 $y_t$ 在状态 $s_t$ 下的条件方差方程，服从
-如下GARCH(p,q)模型：
+$\varepsilon _{{(s_t)}t}$ 表示 $y_t$ 在状态 $s_t$ 下的条件方差方程，服从
+如下 $GARCH(p,q)$ 模型：
 
-$$\left\{ {\begin{array}{*{20}{c}}
-{{\varepsilon _{{s_t}t}} = \sqrt {{h_{{s_t}t}}} {e_t}}\\
-{{h_{{s_t}t}} = {\omega _{{s_t}}} + \sum\limits_{i = 1}^p {{\alpha _{{s_t}i}}{h_{{s_t}t - i}}}  + \sum\limits_{j = 1}^q {{\beta _{{s_t}j}}{\varepsilon _{{s_t}t - j}}} }
-\end{array}} \right.\tag6$$
+$$\left\{ {\begin{array}{}
+{{\varepsilon _{{(s_t)}t}} = \sqrt {{h_{{(s_t)}t}}} {e_t}} \\
+{{h_{{(s_t)}t}} = {\omega _{(s_t)}} + \sum\limits_{i = 1}^p {{\alpha _{{(s_t)}i}}{h_{{(s_t)}t - i}}}  + 
+\sum\limits_{j = 1}^q {{\beta _{{(s_t)}j}}{\varepsilon _{{(s_t)}t - j}}} }
+\end{array}} \right.$$
 
-其中 ${e_t}$ 是均值为0，方差相等的独立同分布随机变量序列。$\omega _{{s_t}},\alpha _{{s_t}},\beta _{{s_t}}$ 分别表示在当前区制下的各参数的值。
-不同区制的转移由一个k状态的的马尔科夫随机过程控制，状态转移矩阵如下：
+其中 ${e_t}$ 是均值为0，方差相等的独立同分布随机变量序列。$\omega
+_{(s_t)},\alpha _{(s_t)},\beta _{(s_t)}$ 分别表示在当前区制下的各参数的值。不同
+区制的转移由一个k状态的的马尔科夫随机过程控制，状态转移矩阵如下：
 
-$$P = \left( {\begin{array}{*{20}{c}}
+$$P = \left( {\begin{array}{}
 {{p_{11}}}&{{p_{12}}}& \cdots &{{p_{1k}}}\\
 {{p_{21}}}&{{p_{22}}}& \cdots &{p{}_{2k}}\\
  \vdots & \vdots & \ddots & \vdots \\
 {{p_{k1}}}&{{p_{k2}}}& \cdots &{{p_{kk}}}
-\end{array}} \right)\tag7$$
+\end{array}} \right)$$
 
 其中 ${p_{i,j}}$ 表示从状态 $j$ 转移到状态 $i$ 的概率。
 
