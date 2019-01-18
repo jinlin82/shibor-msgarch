@@ -188,7 +188,21 @@ $$P = \left[{\begin{array}{cccc}
 
 # 实证分析
 ## 数据来源
-## 描述性分析
+银行间同业拆放利率是最早市场化的利率，在中国利率体系中扮演着重要的角色。其中上海
+银行间同业拆放利率(Shanghai Interbank Offered Rate,SHIBOR)自2006年10月成
+立以来，
+在近年尤受重视。目前公布的品种依据时间划分主要包括隔夜（O/N）、1周（1W）、2周（2W）
+、1个月（1M）等品种。
+
+本文所收集的样本范围是2006年10月8日至2018年12月29日，总计3060个SHIBOR隔夜拆放率数
+据。数据全部来自于上海银行间同业拆放利率官网(http://www.shibor.org/) 。假设 
+${R_t}$ 为第 $t$  期的隔夜拆放利率，在探讨金融时间序列变化时，为了消除数据的非平稳
+性，常常使用对数收益率：
+
+$${r_t} = \ln {R_t} - \ln {R_{t - 1}}$$
+
+其中， ${R_{t - 1}}$ 为上一期的隔夜拆放利率，通过计算，可以得到包含3059个上海银行隔夜同业拆放的收益率
+的时间序列。SHIBOR隔夜拆放利率和对数收益率时序图如下：
 
 ```{r, eval=F, echo=T}
 ## 准备
@@ -211,7 +225,7 @@ library(MSGARCH)#当中GARCH的阶数如何选择
 
 ## 载入数据
 #上海银行同业拆借率
-data=read.csv("F:\\shibor分析\\shibor原始数据\\shibor_data.csv",header=T)
+data=read.csv("F:\\JL\\作业\\11.7\\19论文\\shibor分析\\Shibor数据.csv",header=T)
 shibor<-data[,2]
 par(mfrow=c(1,2))
 shibor.date<-as.Date(data[,1])
@@ -221,9 +235,16 @@ plot(shibor.date,shibor,type="l",xlab="日期",ylab="隔夜拆借利率")
 shibor.rt<-diff(log(shibor))
 
 #收益率转为时间序列LOGRt-LOGR(t-1) 
-plot(shibor.date[-1],shibor.rt,type="l",xlab="日期",ylab="对数收益率",cex.main=0.95,las=1)
+plot(shibor.date[-1],shibor.rt,type="l",xlab="日期",ylab="对数收益率",cex.main=0.95,las=1,main="图1 SHIBOR隔夜拆放利率和对数收益率时序图")
 #显然具有波动应聚集的特征
+```
+由图1可以直观地看出，SHIBOR隔夜拆借利率在2006-2010年波动幅度较平稳，在2010-2016年
+波动幅度较大，在2016-2018年波动趋于平稳。对数收益率序列的方差随时间变化而变化，而
+且有时变化得十分剧烈。同时，对数收益率的波动存在明显的波动集群效应，大波动后面接
+着大波动，小波动后接着小波动，大小波动之间存在明显的差异性。
 
+## 描述性分析
+```{r, eval=F, echo=T}
 #描述统计量
 summary(shibor.rt)#最小值、最大值、均值
 sd(shibor.rt)#标准差
