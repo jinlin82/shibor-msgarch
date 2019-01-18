@@ -187,7 +187,9 @@ $$P = \left[{\begin{array}{cccc}
 将混合正态分布作为MSGarch的一种特殊情况来分析。
 
 # 实证分析
-## 数据来源
+
+## 数据来源及数据处理
+
 银行间同业拆放利率是最早市场化的利率，在中国利率体系中扮演着重要的角色。其中上海
 银行间同业拆放利率(Shanghai Interbank Offered Rate,SHIBOR)自2006年10月成
 立以来，
@@ -225,7 +227,7 @@ library(MSGARCH)#当中GARCH的阶数如何选择
 
 ## 载入数据
 #上海银行同业拆借率
-data=read.csv("F:\\JL\\作业\\11.7\\19论文\\shibor分析\\Shibor数据.csv",header=T)
+data=read.csv("E:\\github_repo\\shibor-msgarch\\Shibor_data.csv",header=T)
 shibor<-data[,2]
 par(mfrow=c(1,2))
 shibor.date<-as.Date(data[,1])
@@ -243,7 +245,8 @@ plot(shibor.date[-1],shibor.rt,type="l",xlab="日期",ylab="对数收益率",cex
 且有时变化得十分剧烈。同时，对数收益率的波动存在明显的波动集群效应，大波动后面接
 着大波动，小波动后接着小波动，大小波动之间存在明显的差异性。
 
-## 描述性分析
+## 数据探索性分析
+
 ```{r, eval=F, echo=T}
 #描述统计量
 summary(shibor.rt)#最小值、最大值、均值
@@ -254,14 +257,37 @@ kurtosis(shibor.rt)#峰态（尖峰）
 #绘制直方图
 qplot(shibor.rt,geom = "histogram",binwidth=0.02)
 
-#平稳性检验
-pp.test(shibor.rt)  #平稳
-
 #正态性检验
 jarque.bera.test(shibor.rt)    #JB检验非正态
 qqnorm(shibor.rt,main = "")
 qqline(shibor.rt)                #QQ图检验非正态
+```
 
+### 正态性检验
+
+建立模型之前对基础数据进行正态性检验是十分必要的。首先可以通过计算对数收益率数据的
+偏度和峰度、直方图和QQ图进行描述性分析。
+
+对数收益率的偏度为0.8151，峰度为31.2635，而正态分布的偏度和峰度分别为0和3，故对数
+收益率序列呈现一定程度的右偏性和显著的尖峰特征，不服从正态分布。
+
+图2的直方图和QQ图也显示对数收益率序列不服从正态分布。直方图中，对数收益率序列的尾
+部明显长于普通正态分布，具有金融序列的尖峰厚尾特征。QQ图可以直观的验证一组数据是否
+服从正态分布，图中对数收益率的散点明显偏离代表正态分布的直线，且在左侧表现出散点图
+分布下摆的趋势，右侧表现出分布上扬的趋势，说明该序列具有明显的尖峰厚尾特征。
+
+以上均是描述性分析得出的初步判断，为了更加科学地判断收益率序列的特征，采用JB（Jarq
+ue-Bera）统计量对收益率数据进行正态性检验，统计量JB对应的p值小于显著性水平0.05，故
+拒绝原假设，验证了之前收益率数据不服从正态分布的判断。
+```{r}
+#平稳性检验
+pp.test(shibor.rt)  #平稳
+```
+### 平稳性检验
+
+在对时间序列进行分析时，必须要进行平稳性检验。通过使用适用于异方差场合的PP检验法(P
+hillips-Person Test)对SHIBOR对数收益率序列进行检验发现，该序列是平稳的。
+```{r, eval=F, echo=T}
 #自相关性检验
 par(mfrow=c(1,2)) 
 acf(shibor.rt,main="",xlab="lag(a)",ylab="ACF")#画自相关图
@@ -270,7 +296,14 @@ acf(shibor.rt,plot = F,lag.max = 35)
 pacf(shibor.rt,main="",xlab="Lag(b)",ylab="PACF",las=1)#画偏自相关图
 title(main="(b)the PACF of Return",cex.main=0.95)
 pacf(shibor.rt,plot = F,lag.max = 35)
+Box.test(shibor.rt,lag=10,type = "Ljung")
+```
+### 自相关性检验
 
+对上海银行间隔夜拆放利率进行自相关检验，这里分别运用自相关系数、偏自相关系数和
+Ljung-Box Q统计量对SHIBOR对数收益率序列进行自相关分析。检验结果显示，收益率序列具
+有较强的自相关性。
+```{r, eval=F, echo=T}
 #收益率平方的自相关性（应该是一阶差分序列）
 par(mfrow=c(1,2))
 rt.square<-shibor.rt^2
@@ -279,11 +312,16 @@ title(main = "(c)the ACF of Return Square",cex.main=0.95)
 pacf(rt.square,main="",xlab="Lag(d)",ylab="PACF",las=1)#画偏自相关图
 title(main = "(d)the PACF of Return Square",cex.main=0.95)
 Box.test(rt.square,lag = 10,type = "Ljung")
-Box.test(shibor.rt,lag=10,type = "Ljung")
-
 #ARCH效应检验
 ArchTest(shibor.rt,lag=12)  #存在ARCH效应
+```
+### ARCH效应检验
 
+由SHIBOR的对数收益率的时序图可以看出，收益率数据可能存在异方差现象。两种常用的ARCH
+检验统计方法是Portmanteau Q检验和LM检验。这里使用Portmanteau Q检验对收益率数据进行
+分析。根据R软件分析结果可知 $p - value < 0.05$ ，故拒绝原数据，即认为对数收益率平方
+序列自相关，对数收益率存在ARCH效应。
+```{r, eval=F, echo=T}
 #拟合GARCH
 library(timeDate)
 library(timeSeries)
