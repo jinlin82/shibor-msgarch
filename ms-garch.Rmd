@@ -116,14 +116,14 @@ GARCH模型，会使模型与真实情况相差较大，高估同业拆借市场
 
 $${Y_t} = \beta_0^{(s_t)}+\sum\limits_{i = 1}^{{n_1}} {\beta _i^{(s_t)}{X_i}}  + 
 \sum\limits_{i = 1}^{{n_2}} {\beta _i^{(s_t)}{Y_{t - j}}}  + {\varepsilon ^{(s_t)}},\quad 
-\varepsilon ^{(s_t)} \sim N\left(0,\sigma ^{(s_t)} \right)
+\varepsilon ^{(s_t)} \sim N\left(0,\sigma ^{2(s_t)} \right)
 $$ {#eq:ms-model}
 
 [@eq:ms-model] 式中 ${y_t:t=1,2,…,T}$ 表示金融时间序列， $k$ 表示区制的个数，$n_1$ , $n_2$
 分别表示外生变量和自回归的阶数。设共有 $k$ 个区制， $s_t$ 表示 $y_t$ 所处的
 区制的状态。不同区制的转移遵循具有以下转移矩阵的马尔科夫随机过程：
 
-$${P_{ij}} = \Pr \left( {{S_{t + 1}} = i\left| {{(s_t)} = j} \right.} \right)
+$${P_{ij}} = \Pr \left( {{(s_{t + 1})} = i\left| {{(s_t)} = j} \right.} \right)
 且\sum\limits_{i = 1}^k {{P_{ij}}}  = 1$$
 
 其中 ${P_{i,j}}$ 表示从状态 $j$ 转移到状态 $i$ 的概率。
@@ -138,7 +138,7 @@ $$\left\{ {\begin{array}{l}
 {{y_t} = f\left( {t,{y_{t - 1}},{y_{t - 2}}, \cdots } \right) + {\varepsilon _t}}\\
 {{\varepsilon _t} = \sqrt {{h_t}} {e_t}}\\
 {{h_t} = \omega  + \sum\limits_{i = 1}^p {{\alpha _i}{h_{t - i}}}  + 
-\sum\limits_{j = 1}^q {{\beta _j}{\varepsilon _{t - j}}} }
+\sum\limits_{j = 1}^q {{\beta _j}{\varepsilon ^2_{t - j}}} }
 \end{array}} \right.$$
 
 其中， ${y_t}$ 表示时刻 $t$ 的收益率, $h_t$ 表示条件方差， ${e_t}$ 是均值
@@ -151,25 +151,24 @@ $$\left\{ {\begin{array}{l}
 设 ${y_t:t=1,2,…,T}$ 表示金融时间序列，共有 $k$ 个区制, $y_t$ 所处的区制
 用 $s_t$ 表示，即 ${(s_t)} \in \left( {1,2, \cdots ,k} \right)$ 。若 $y_t$ 满足
 
-$${y_t} = {\mu _{(s_t)}} + {\varepsilon _{{(s_t)}t}}$$
+$${y_t} = {\mu ^{(s_t)}} + {\varepsilon_t ^{(s_t)}}$$
 
-其中 $\mu _{(s_t)}$ 表示 $y_t$ 在状态 $s_t$ 下的均值方程
+其中 $\mu ^{(s_t)}$ 表示 $y_t$ 在状态 $s_t$ 下的均值方程
 
-$${\mu _{(s_t)}} = {\phi _{{(s_t)}0}} + {\phi _{{(s_t)}1}}{y_{t - 1}} + 
-\cdots  + {\phi _{{(s_t)}q}}{y_{t - q}}$$
+$${\mu ^{\left( {{s_t}} \right)}} = {f^{\left( {{s_t}} \right)}}\left( {t,{y_{t - 1}},{y_{t - 2}}, \cdots } \right)$$
 
-$\varepsilon _{{(s_t)}t}$ 表示 $y_t$ 在状态 $s_t$ 下的条件方差方程，服从
+$\varepsilon _t^{{(s_t)}}$ 表示 $y_t$ 在状态 $s_t$ 下的条件方差方程，服从
 如下 $GARCH(p,q)$ 模型：
 
 $$\left\{ {\begin{array}{l}
-{{\varepsilon _{{(s_t)}t}} = \sqrt {{h_{{(s_t)}t}}} {e_t}} \\
-{{h_{{(s_t)}t}} = {\omega _{(s_t)}} + \sum\limits_{i = 1}^p {{\alpha _{{(s_t)}i}}{h_{{(s_t)}t - i}}}  + 
-\sum\limits_{j = 1}^q {{\beta _{{(s_t)}j}}{\varepsilon _{{(s_t)}t - j}}} }
+{{\varepsilon _t^{{(s_t)}}} = \sqrt {{h_t^{{(s_t)}}}} {e_t}} \\
+{{h_t^{{(s_t)}}} = {\omega ^{(s_t)}} + \sum\limits_{i = 1}^p {{\alpha _i^{{(s_t)}}}{h_{t-i}^{(s_t)}}}  + 
+\sum\limits_{j = 1}^q {{\beta _j^{{(s_t)}}}{\varepsilon _{t-j}^{2(s_t)}}} }
 \end{array}} \right.$$
 
-其中 ${e_t}$ 是均值为0，方差相等的独立同分布随机变量序列。$\omega
-_{(s_t)},\alpha _{(s_t)},\beta _{(s_t)}$ 分别表示在当前区制下的各参数的值。不同
-区制的转移由一个k状态的的马尔科夫随机过程控制，状态转移矩阵如下：
+其中 ${e_t}$ 是均值为 $0$ ，方差相等的独立同分布随机变量序列。$\omega
+^{(s_t)}$ , $\alpha ^{(s_t)}$ , $\beta ^{(s_t)}$ 分别表示在当前区制下的各参数的值。不同
+区制的转移由一个 $k$ 状态的的马尔科夫随机过程控制，状态转移矩阵如下：
 
 $$P = \left[{\begin{array}{cccc}
 {{p_{11}}}&{{p_{12}}}& \cdots &{{p_{1k}}}\\
@@ -180,35 +179,40 @@ $$P = \left[{\begin{array}{cccc}
 
 其中 ${p_{i,j}}$ 表示从状态 $j$ 转移到状态 $i$ 的概率。
 
-混合正态分布是由两个或两个以上正态分布的加权组合形成的分布，任意两个
-正态分布之间均是独立的。由于不同的正态分布有着不同的均值和方差,因此混
-合正态分布通常比正态分布能够更好地刻画尖峰性和厚尾性。而且在本文所使
-用的MSGARCH包中可以通过设置参数得到混合正态分布的具体形式。因此，我们
-将混合正态分布作为MSGarch的一种特殊情况来分析。
+混合正态分布是由两个或两个以上正态分布的加权组合形成的分布，且任意两个
+正态分布之间均是独立的，因此混合正态分布也可以理解为马尔科夫转换模型的
+一个特例。由于不同的正态分布有着不同的均值和方差,所以混合正态分布通常
+比正态分布能够更好地刻画尖峰性和厚尾性，因此本文亦将使用混合分布GARCH模
+型对shibor收益率数据进行拟合。模型估计部分采用R软件中的MSGARCH包实现。
 
 # 实证分析
 ## 数据来源
 银行间同业拆放利率是最早市场化的利率，在中国利率体系中扮演着重要的角色。其中上海
-银行间同业拆放利率(Shanghai Interbank Offered Rate,SHIBOR)自2006年10月成
-立以来，
+银行间同业拆放利率(Shanghai Interbank Offered Rate,SHIBOR)自2006年10月成立以来，
 在近年尤受重视。目前公布的品种依据时间划分主要包括隔夜（O/N）、1周（1W）、2周（2W）
 、1个月（1M）等品种。
 
-本文所收集的样本范围是2006年10月8日至2018年12月29日，总计3060个SHIBOR隔夜拆放率数
-据。数据全部来自于上海银行间同业拆放利率官网(http://www.shibor.org/) 。假设 
-${R_t}$ 为第 $t$  期的隔夜拆放利率，在探讨金融时间序列变化时，为了消除数据的非平稳
+本文所收集的样本范围是2006年10月8日至2018年12月29日的隔夜同业拆借利率，总计3060个
+SHIBOR隔夜拆放率数据。数据全部来自于上海银行间同业拆放利率官网(http://www.shibor.org/)。
+假设 ${R_t}$ 为第 $t$  期的隔夜拆放利率，在探讨金融时间序列变化时，为了消除数据的非平稳
 性，常常使用对数收益率：
 
 $${r_t} = \ln {R_t} - \ln {R_{t - 1}}$$
 
-其中， ${R_{t - 1}}$ 为上一期的隔夜拆放利率，通过计算，可以得到包含3059个上海银行隔夜同业拆放的收益率
-的时间序列。SHIBOR隔夜拆放利率和对数收益率时序图如下：
+其中， ${R_{t - 1}}$ 为上一期的隔夜拆放利率，通过计算，可以得到包含3059个上海银行隔夜
+同业拆放的收益率的时间序列。SHIBOR隔夜拆放利率和对数收益率时序图如下：
 
-```{r, eval=F, echo=T}
+```{r, eval=T, echo=F}
 ## 准备
-options(digtis=4)
-graphics.off()
 rm(list=ls())
+options(digits=5)
+options(scipen=5)
+graphics.off()
+path <- "F:/github_repo/shibor-msgarch/" 
+setwd(path)
+#Sys.setlocale('LC_ALL','C') 
+Sys.setlocale("LC_ALL", "Chinese")
+knitr::opts_chunk$set(echo = TRUE)
 
 ## 加载包
 library(zoo)
@@ -220,12 +224,12 @@ library(FinTS)
 library(moments)
 library(devtools)
 library(FinTS)
-library(MSGARCH)#当中GARCH的阶数如何选择
+library(MSGARCH)
 
 
 ## 载入数据
 #上海银行同业拆借率
-data=read.csv("F:\\JL\\作业\\11.7\\19论文\\shibor分析\\Shibor数据.csv",header=T)
+data=read.csv("Shibor_data.csv",header=T)
 shibor<-data[,2]
 par(mfrow=c(1,2))
 shibor.date<-as.Date(data[,1])
