@@ -204,17 +204,22 @@ $${r_t} = \ln {R_t} - \ln {R_{t - 1}}$$
 其中， ${R_{t - 1}}$ 为上一期的隔夜拆借利率，通过计算，可以得到3059个上海银行隔夜
 同业拆借的收益率的时间序列。SHIBOR隔夜拆借利率和对数收益率时序图如下：
 
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = getwd())
+knitr::opts_chunk$set(echo = TRUE)
+```
+
 ```{r, eval=T, include=FALSE}
 ## 准备
 rm(list=ls())
 options(digits=5)
 options(scipen=5)
 graphics.off()
-path <- "F:/github_repo/shibor-msgarch/" 
-setwd(path)
+## path <- "F:/github_repo/shibor-msgarch/" 
+## setwd(path)
 #Sys.setlocale('LC_ALL','C') 
 Sys.setlocale("LC_ALL", "Chinese")
-knitr::opts_chunk$set(echo = TRUE)
+
 
 ## 加载包
 library(zoo)
@@ -241,7 +246,7 @@ shibor.rt<-diff(log(shibor))
 ```
 
 ```{r,eval=T,echo=FALSE}
-par(mfrow=c(1,2))
+par(mfrow=c(2,1))
 plot(shibor.date,shibor,type="l",xlab="日期",ylab="隔夜拆借利率")
 plot(shibor.date[-1],shibor.rt,type="l",xlab="日期",ylab="对数收益率",cex.main=0.95,las=1)
 title("图1 SHIBOR隔夜拆放利率和对数收益率时序图",line=-2,outer=T)
