@@ -331,35 +331,59 @@ title(main="(b)the PACF of Return",cex.main=0.95)
 title("图3 shibor收益率自相关图和偏自相关图",line=-1.2,outer=T)
 ```
 
-```{R,eval=T,include=F}
+```{r,eval=T,include=F}
 acf(shibor.rt,plot = F,lag.max = 15)
 pacf(shibor.rt,plot = F,lag.max = 15)
 Box.test(shibor.rt,lag=10,type = "Ljung")
+library(forecast)
+library(stats)
+fit1=arima(shibor.rt,order = c(1,0,1))
+fit2=arima(shibor.rt,order = c(1,0,2))
+fit3=arima(shibor.rt,order = c(1,0,1))
+fit4=arima(shibor.rt,order = c(2,0,2))
+auto.arima(shibor.rt)
+resi<-residuals(fit4,standardize=T)#获得标准化残差
+res.ts<-ts(resi,frequency = 250)
+```
+```{r, eval=T, echo=F}
+plot(res.ts,type="l")
+```
+```{R,eval=T,include=F}
+Box.test(resi,lag=10,type = "Ljung")
 ```
 
 Ljung-Box Q统计量 | P值
 :------:|:--------:
 $107.12$ | $5.551e-16$ 
 
-对上海银行间隔夜拆放利率进行自相关检验，这里分别运用自相关系数、偏自相关系数和
-Ljung-Box Q统计量对SHIBOR对数收益率序列进行自相关分析。检验结果显示，收益率序列具
-有较强的自相关性。
+对上海银行间隔夜拆放利率进行自相关检验，这里分别运用自相关系数、偏自相关系数和Ljung-Box 
+Q统计量对SHIBOR对数收益率序列进行自相关分析。
+
+Ljung-Box Q统计量的值为107.12，对应p值远小于显著性水平0.05，故收益率序列为非白噪声序列，具有
+较强的自相关性，需要进一步提取观察值序列的相关信息。综合之前的平稳性检验，可以判断对数收益率
+序列是一个蕴涵相关信息的平稳序列，故建立ARMA(p,q)线性模型来拟合该序列的变化过程。
+
+图3中的自相关系数和偏自相关系数均显示出拖尾的性质，考虑到模型的简洁性，本文将ARMA模型参数p,q
+的取值设置为1，2，尝试使用ARMA(1,1)、ARMA(1,2)、ARMA(1,1)、ARMA(2,2)对序列进行拟合。最终根据
+参数显著性检验以及AIC和BIC准则选择最优模型为ARMA(1,2)，其AIC和BIC值最小，分别为-6731.1和-6733.1。
+根据已经得出的参数估计值，可以获得ARMA(1,2)模型的残差序列，如图4所示。对其进行白噪声检验，Ljung-Box Q统计量显示残差序列无自相关性，p值为0.025，小于0.05的显著性水平。
 
 ### ARCH效应检验
 
 ```{r, eval=T, include=F}
 #ARCH效应检验
-ArchTest(shibor.rt,lag=12)  #存在ARCH效应
+ArchTest(resi,lag=12)  #存在ARCH效应
 ```
 
 Portmanteau Q统计量 | P值
 :------:|:--------:
 $239.04$ | $<2.2e-16$
 
-由SHIBOR的对数收益率的时序图可以看出，收益率数据可能存在异方差现象。两种常用的ARCH
+观察残差序列可以发现，虽然其波动是平稳的，但在2006-2008，2010-2013，2018这些时间段波动持
+续偏大，在其余时间段波动持续偏小，呈现出聚集效应，故接下来进行ARCH效应检验。两种常用的ARCH
 检验统计方法是Portmanteau Q检验和LM检验。这里使用Portmanteau Q检验对收益率数据进行
-分析。根据R软件分析结果可知P值远小于0.05 ，故拒绝原数据，即认为对数收益率平方
-序列自相关，对数收益率存在ARCH效应。
+分析。根据R软件分析结果可知P值远小于0.05 ，故拒绝原数据，即认为残差平方序列自相关，残差序
+列存在ARCH效应。
 
 ```{r, eval=F, echo=T}
 #拟合GARCH
