@@ -3,10 +3,12 @@ title: "基于MS-GARCH模型的上海银行同业拆借利率波动性分析"
 author: "Jin"
 date: "2019-01-14"
 output:
-  html_document:
+  bookdown::html_document2:
+    number_sections: true
+    seq_numbering: true
+    fig_caption: true
     highlight: haddock
     theme: null
-    number_sections: yes
     md_extensions: +east_asian_line_breaks
     keep_md: true
     toc: false
@@ -16,11 +18,11 @@ output:
     latex_engine: xelatex
     md_extensions: +east_asian_line_breaks
     pandoc_args: ["--listing", "--filter", "pandoc-crossref"]
-  word_document:
-    reference_docx: word-styles-01.docx
+  bookdown::word_document2:
+    fig_caption: true
+    reference_docx: abc.docx
     md_extensions: +east_asian_line_breaks
     pandoc_args: ["--filter", "pandoc-crossref"]
-
 css: markdown.css
 autoEqnLabels: true
 eqnPrefixTemplate: ($$i$$)
@@ -212,8 +214,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, eval=T, include=FALSE}
 ## 准备
 rm(list=ls())
-options(digits=5)
-options(scipen=5)
+options(digits=4)
+options(scipen=4)
 graphics.off()
 ## path <- "F:/github_repo/shibor-msgarch/" 
 ## setwd(path)
@@ -248,7 +250,7 @@ for (i in 1 : 3059) {shibor.rt[i] <- (log(shibor[i+1])-log(shibor[i]))}
 #收益率转为时间序列LOGRt-LOGR(t-1) 
 ```
 
-```{r,eval=T,echo=FALSE,fig.cap = "图1 SHIBOR隔夜拆放利率和对数收益率时序图"}
+```{r fig-ts,eval=T,echo=FALSE,fig.cap = "SHIBOR隔夜拆放利率和对数收益率时序图", dev='png'}
 par(mfrow=c(2,1))
 par(mar=c(2,4,1,2))
 plot(shibor.date,shibor,type="l",xlab="日期",ylab="隔夜拆借利率")
@@ -256,7 +258,7 @@ plot(shibor.date[-1],shibor.rt,type="l",xlab="日期",ylab="对数收益率",cex
 #显然具有波动应聚集的特征
 ```
 
-由图1可以看出，SHIBOR隔夜拆借利率在2006-2010年波动幅度较平稳，在2010-2016年
+由图 \@ref(fig:fig-ts)  可以看出，SHIBOR隔夜拆借利率在2006-2010年波动幅度较平稳，在2010-2016年
 波动幅度较大，在2016-2018年波动趋于平稳。对数收益率序列的方差随时间变化而变化，
 而且有时变化得十分剧烈。同时，对数收益率的波动存在显著的波动集群效应，大波动后面跟随
 着大波动，小波动后跟随着小波动，且大波动率和小波动率的时期交替出现。
@@ -275,14 +277,17 @@ shibor.rt2<- as.data.frame(t(shibor.rt1[c(7,14,16,15),]))
 colnames(shibor.rt2) <- c("均值","标准差","偏态系数","峰态系数")
 ```
 
-```{r,eval=T,echo=F,message=FALSE,warning=FALSE,comment=""}
-kable(shibor.rt2,row.names =F,align = "c",caption="样本描述性分析结果")
+
+```{r stat,eval=T,echo=F,message=FALSE,warning=FALSE,comment=""}
+kable(shibor.rt2,row.names =F,align = "c", caption="样本描述性分析结果")
 ```
 
-对数收益率的偏度为`r shibor.rt2[1,3] `，峰度为`r shibor.rt2[1,4] `，而正态分布的偏
-度和峰度均为0，故对数收益率序列具有右偏性和尖峰性，初步判断不服从正态分布。
 
-```{r,eval=T,echo=F,fig.align="center",fig.cap="图2 SHIBOR收益率频率分布直方图和正态Q-Q图"}
+从表 \@ref(tab:stat) 看出，对数收益率的偏度为`r shibor.rt2[1,3] `，峰度
+为 `r shibor.rt2[1,4]` ，而正态分布的偏度和峰度均为0，故对数收益率序列具有右偏性
+和尖峰性，初步判断不服从正态分布。
+
+```{r,eval=T,echo=F,fig.align="center",fig.cap="SHIBOR收益率频率分布直方图和正态Q-Q图", dev='png'}
 par(mfrow=c(1,2))
 #绘制直方图
 hist(shibor.rt,main=NULL,breaks = 50)
@@ -319,7 +324,7 @@ pp.test(shibor.rt)  #平稳
 
 ### 自相关性检验
 
-```{r, eval=T, echo=F,fig.align="center",fig.cap="图3 SHIBOR收益率自相关图和偏自相关图"}
+```{r, eval=T, echo=F,fig.align="center",fig.cap="SHIBOR收益率自相关图和偏自相关图", dev='png'}
 #自相关性检验
 par(mfrow=c(1,2)) 
 acf(shibor.rt,main="",xlab="滞后期",ylab="ACF")#画自相关图
@@ -361,7 +366,7 @@ Ljung-Box Q统计量的值为107.12，对应p值为6.7e-16,远小于显著性水
 综合之前的平稳性检验，可以判断对数收益率序列是一个蕴涵相关信息的平稳序列，故建
 立ARMA(p,q)线性模型来拟合该序列的变化过程。
 
-```{r, eval=T, echo=F,fig.align="center",fig.cap="图4 SHIBOR收益率残差序列图"}
+```{r, eval=T, echo=F,fig.align="center",fig.cap="SHIBOR收益率残差序列图", dev='png'}
 plot(shibor.date[-1],res.ts,type="l",xlab="日期",ylab="残差",cex.main=0.95,las=1)
 ```
 图3中的自相关系数和偏自相关系数均显示出拖尾的性质，考虑到模型的简洁性，本文将ARMA模型参数p,q
