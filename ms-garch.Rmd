@@ -20,7 +20,7 @@ output:
     pandoc_args: ["--listing", "--filter", "pandoc-crossref"]
   bookdown::word_document2:
     fig_caption: true
-    reference_docx: abc.docx
+    reference_docx: word-styles-01.docx
     md_extensions: +east_asian_line_breaks
     pandoc_args: ["--filter", "pandoc-crossref"]
 css: markdown.css
@@ -270,18 +270,13 @@ plot(shibor.date[-1],shibor.rt,type="l",xlab="日期",ylab="对数收益率",cex
 建立模型之前对基础数据进行正态性检验是十分必要的。首先可以通过计算对数收益率
 数据的描述统计量、直方图和QQ图进行描述性分析。
 
-```{r,eval=T,include=FALSE}
+```{r stat, eval=T,echo=F,message=FALSE,warning=FALSE,comment=""}
 shibor.rt1<-basicStats(shibor.rt)
-shibor.rt1
 shibor.rt2<- as.data.frame(t(shibor.rt1[c(7,14,16,15),]))
 colnames(shibor.rt2) <- c("均值","标准差","偏态系数","峰态系数")
-```
 
-
-```{r stat,eval=T,echo=F,message=FALSE,warning=FALSE,comment=""}
 kable(shibor.rt2,row.names =F,align = "c", caption="样本描述性分析结果")
 ```
-
 
 从表 \@ref(tab:stat) 看出，对数收益率的偏度为`r shibor.rt2[1,3] `，峰度
 为 `r shibor.rt2[1,4]` ，而正态分布的偏度和峰度均为0，故对数收益率序列具有右偏性
