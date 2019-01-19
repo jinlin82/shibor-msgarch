@@ -244,7 +244,7 @@ shibor.date<-as.Date(data[,1])
 #计算收益率
 #shibor.rt<-diff(log(shibor))
 shibor.rt<- vector()
-for (i in 1 : 3059) {shibor.rt[i] <- (log((shibor[i+1])-log(shibor[i])))}
+for (i in 1 : 3059) {shibor.rt[i] <- (log(shibor[i+1])-log(shibor[i]))}
 #收益率转为时间序列LOGRt-LOGR(t-1) 
 ```
 
@@ -278,8 +278,8 @@ colnames(shibor.rt2) <- c("均值","标准差","偏态系数","峰态系数")
 kable(shibor.rt2,row.names =F,align = "c",caption="样本描述性分析结果")
 ```
 
-对数收益率的偏度为0.81512，峰度为31.26355，而正态分布的偏度和峰度分别为0和3，
-故对数收益率序列具有右偏性和尖峰性，初步判断不服从正态分布。
+对数收益率的偏度为`r shibor.rt2[1,3] `，峰度为`r shibor.rt2[1,4] `，而正态分布的偏
+度和峰度均为0，故对数收益率序列具有右偏性和尖峰性，初步判断不服从正态分布。
 
 ```{r,eval=T,echo=F,fig.align="center",fig.cap="图2 shibor收益率频率分布直方图和正态Q-Q图"}
 par(mfrow=c(1,2))
@@ -302,7 +302,7 @@ jarque.bera.test(shibor.rt)    #JB检验非正态
 ```
 
 以上均是描述性分析得出的初步判断，为了更加科学地判断收益率序列的特征，采用
-J-B（Jarque-Bera）统计量对收益率数据进行正态性检验，统计量J-B对应的p值为2.2e-16
+J-B（Jarque-Bera）统计量对收益率数据进行正态性检验，统计量J-B对应的p值为2e-16,
 小于显著性水平0.05，故拒绝原假设，验证了之前收益率数据不服从正态分布的判断。
 
 ### 平稳性检验
@@ -333,12 +333,18 @@ pacf(shibor.rt,plot = F,lag.max = 15)
 Box.test(shibor.rt,lag=10,type = "Ljung")
 library(forecast)
 library(stats)
-fit1=arima(shibor.rt,order = c(1,0,1))
+fit1=Arima(shibor.rt,order = c(1,0,1))
+fit1.res=c("fit1",AIC(fit1),BIC(fit1))
 fit2=arima(shibor.rt,order = c(1,0,2))
-fit3=arima(shibor.rt,order = c(1,0,1))
+fit2.res=c("fit2",AIC(fit2),BIC(fit2))
+fit3=arima(shibor.rt,order = c(2,0,1))
+fit3.res=c("fit3",AIC(fit3),BIC(fit3))
 fit4=arima(shibor.rt,order = c(2,0,2))
+fit4.res=c("fit4",AIC(fit4),BIC(fit4))
+res1=data.frame(fit1.res,fit2.res,fit3.res,fit4.res)#arma(1,2)最优
+res1
 auto.arima(shibor.rt)
-resi<-residuals(fit4,standardize=T)#获得标准化残差
+resi<-residuals(fit2,standardize=T)#获得标准化残差
 res.ts<-ts(resi,frequency = 250)
 ```
 ```{r, eval=T, echo=F}
@@ -351,15 +357,16 @@ Box.test(resi,lag=10,type = "Ljung")
 对上海银行间隔夜拆放利率进行自相关检验，这里分别运用自相关系数、偏自相关系数和Ljung-Box 
 Q统计量对SHIBOR对数收益率序列进行自相关分析。
 
-Ljung-Box Q统计量的值为107.12，对应p值为5.551e-16,远小于显著性水平0.05，故收益率序列为非
+Ljung-Box Q统计量的值为107.12，对应p值为6.7e-16,远小于显著性水平0.05，故收益率序列为非
 白噪声序列，具有较强的自相关性，需要进一步提取观察值序列的相关信息。综合之前的平稳性检验
 ，可以判断对数收益率序列是一个蕴涵相关信息的平稳序列，故建立ARMA(p,q)线性模型来拟合该序
 列的变化过程。
 
 图3中的自相关系数和偏自相关系数均显示出拖尾的性质，考虑到模型的简洁性，本文将ARMA模型参数p,q
-的取值设置为1，2，尝试使用ARMA(1,1)、ARMA(1,2)、ARMA(1,1)、ARMA(2,2)对序列进行拟合。最终根据
-参数显著性检验以及AIC和BIC准则选择最优模型为ARMA(1,2)，其AIC和BIC值最小，分别为-6731.1和-6733.1。
-根据已经得出的参数估计值，可以获得ARMA(1,2)模型的残差序列，如图4所示。对其进行白噪声检验，Ljung-Box Q统计量显示残差序列无自相关性，p值为0.025，小于0.05的显著性水平。
+的取值设置为1，2，尝试使用ARMA(1,1)、ARMA(1,2)、ARMA(2,1)、ARMA(2,2)对序列进行拟合。最终根据
+参数显著性检验以及AIC和BIC准则选择最优模型为ARMA(2,1)，其AIC和BIC值最小，分别为-6734.29和-6704.16。
+根据已经得出的参数估计值，可以获得ARMA(2,1)模型的残差序列，如图4所示。对其进行白噪声检验，
+Ljung-Box Q统计量显示残差序列无自相关性，p值为0.0074，小于0.05的显著性水平。
 
 ### ARCH效应检验
 
@@ -368,47 +375,69 @@ Ljung-Box Q统计量的值为107.12，对应p值为5.551e-16,远小于显著性�
 ArchTest(resi,lag=12)  #存在ARCH效应
 ```
 
-观察残差序列可以发现，虽然其波动是平稳的，但在2006-2008，2010-2013，2018这些时间段波动持
+观察图4中的残差序列可以发现，虽然其波动是平稳的，但在2006-2008，2010-2013，2018这些时间段波动持
 续偏大，在其余时间段波动持续偏小，呈现出聚集效应，故接下来进行ARCH效应检验。两种常用的ARCH
 检验统计方法是Portmanteau Q检验和LM检验。这里使用Portmanteau Q检验对收益率数据进行
-分析。根据R软件分析结果可知P值小于2.2e-16,远小于0.05 ，故拒绝原数据，即认为残差平方序列自相关，残差序
+分析。根据R软件分析结果可知P值小2e-16,远小于0.05 ，故拒绝原数据，即认为残差平方序列自相关，残差序
 列存在ARCH效应。
 
-```{r, eval=F, echo=T}
+```{r, eval=T, include=F}
 #拟合GARCH
 library(timeDate)
 library(timeSeries)
 library(fBasics)
 library(fGarch)
-
+#残差平方的自相关性分析
+par(mfrow=c(2,1))
+rt.square<-resi^2
+acf(rt.square,main="",xlab="lag(c)",ylab="ACF",las=1)#画自相关图
+title(main = "(c)the ACF of resi Square",cex.main=0.95)
+pacf(rt.square,main="",xlab="Lag(d)",ylab="PACF",las=1)#画偏自相关图
+title(main = "(d)the PACF of resi Square",cex.main=0.95)
+Box.test(rt.square,lag = 10,type = "Ljung")
+```
+```{r, eval=T, include=F}
 #假定条件分布为正态分布
 ##拟合GARCH(1,1)模型
-m1<-garchFit(~1+garch(1,1),data = shibor.rt,trace = F)
+m1<-garchFit(~arma(1,2)+garch(1,1),data =shibor.rt ,trace = F)
 summary(m1)
+m1.res=c("m1",m1@fit$ics[-c(3,4)])
 ##拟合GARCH(2,1)模型
-m2<-garchFit(~1+garch(2,1),data = shibor.rt,trace = F)
-summary(m2)
+m2<-garchFit(~arma(1,2)+garch(2,1),data =shibor.rt,trace = F)
+summary(m2)#系数不显著，舍去
+m2.res=c("m2",m2@fit$ics[-c(3,4)])
 ##拟合GARCH(1,2)模型
-m3<-garchFit(~1+garch(1,2),data = shibor.rt,trace = F)
+m3<-garchFit(~arma(1,2)+garch(1,2),data =shibor.rt,trace = F)
 summary(m3)
+m3.res=c("m3",m3@fit$ics[-c(3,4)])
 ##拟合GARCH(2,2)模型
-m4<-garchFit(~1+garch(2,2),data = shibor.rt,trace = F)
+m4<-garchFit(~arma(1,2)+garch(2,2),data =shibor.rt,trace = F)
 summary(m4)#所估参数出现空值，舍去
-
+m4.res=c("m4",m4@fit$ics[-c(3,4)])
 #假定条件分布为t分布
 ##拟合GARCH(1,1)模型
-m5<-garchFit(formula = ~1+garch(1,1),data = shibor.rt,trace = F,cond.dist = "std")
+m5<-garchFit(formula = ~arma(1,2)+garch(1,1),data =shibor.rt,trace = F,cond.dist = "std")
 summary(m5)
+m5.res=c("m5",m5@fit$ics[-c(3,4)])
 ##拟合GARCH(2,1)模型
-m6<-garchFit(formula = ~1+garch(2,1),data = shibor.rt,trace = F,cond.dist = "std")
+m6<-garchFit(formula = ~arma(1,2)+garch(2,1),data =shibor.rt,trace = F,cond.dist = "std")
 summary(m6)#所估参数出现空值，舍去
+m6.res=c("m6",m6@fit$ics[-c(3,4)])
 ##拟合GARCH(1,2)模型
-m7<-garchFit(formula = ~1+garch(1,2),data = shibor.rt,trace = F,cond.dist = "std")
+m7<-garchFit(formula = ~arma(1,2)+garch(1,2),data =shibor.rt,trace = F,cond.dist = "std")
 summary(m7)
+m7.res=c("m7",m7@fit$ics[-c(3,4)])
 ##拟合GARCH(2,2)模型
-m8<-garchFit(formula = ~1+garch(2,2),data = shibor.rt,trace = F,cond.dist = "std")
+m8<-garchFit(formula = ~arma(1,2)+garch(2,2),data =shibor.rt,trace = F,cond.dist = "std")
 summary(m8)#所估参数出现空值，舍去
+m8.res=c("m8",m8@fit$ics[-c(3,4)])
+res2=data.frame(m1.res,m2.res,m3.res,m4.res,m5.res,m6.res,m7.res,m8.res)#arma(2,1)最优
+res2#m5最优
+```
+接下来通过对ARMA(1,2)模型的残差序列进行自相关性分析发现，自相关系数和偏自相关系数均存在一定程
+度的拖尾性，故设置ARCH效应和GARCH效应的阶数为1，2，分别构建基于正态分布和t分布的ARMA(1,2)-GARCH(1,1)、ARMA(1,2)-GARCH(2,1)、ARMA(1,2)-GARCH(1,2)、ARMA(1,2)-GARCH(2,2).结果显示基于t分布的ARMA-GARCH模型显著优于基于正态分布的模型，最终根据参数显著性和AIC、BIC准则确定最优模型为ARMA(1,2)-GARCH(1,1)-t.
 
+```{r, eval=F, echo=T}
 #拟合混合分布GARCH
 ##两阶段混合
 ###混合形式为sGARCH、sGARCH
@@ -728,8 +757,8 @@ m59=FitML(spec,shibor.rt)
 summary(m59)
 m59.res=c("m59",m59$loglik,summary(m59)$AIC,summary(m59)$BIC)
 
-res=data.frame(m9.res,m10.res,m11.res,m12.res,m13.res,m14.res,m15.res,m16.res,m17.res,m18.res,m19.res,m20.res,m21.res,m22.res,m23.res,m24.res,m25.res,m26.res,m27.res,m28.res,m29.res,m30.res,m31.res,m32.res,m33.res,m34.res,m35.res,m37.res,m38.res,m39.res,m40.res,m41.res,m42.res,m43.res,m44.res,m45.res,m46.res,m47.res,m48.res,m49.res,m50.res,m51.res,m52.res,m53.res,m54.res,m55.res,m56.res,m57.res,m58.res,m59.res)
-View(res)
+res3=data.frame(m9.res,m10.res,m11.res,m12.res,m13.res,m14.res,m15.res,m16.res,m17.res,m18.res,m19.res,m20.res,m21.res,m22.res,m23.res,m24.res,m25.res,m26.res,m27.res,m28.res,m29.res,m30.res,m31.res,m32.res,m33.res,m34.res,m35.res,m37.res,m38.res,m39.res,m40.res,m41.res,m42.res,m43.res,m44.res,m45.res,m46.res,m47.res,m48.res,m49.res,m50.res,m51.res,m52.res,m53.res,m54.res,m55.res,m56.res,m57.res,m58.res,m59.res)
+View(res3)
 #以上模型根据AIC和BIC准则，选择41、53
 
 auto.arima(shibor.rt)
