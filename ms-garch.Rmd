@@ -139,7 +139,7 @@ $$\left\{ {\begin{array}{l}
 {{\varepsilon _t} = \sqrt {{h_t}} {e_t}}\\
 {{h_t} = \omega  + \sum\limits_{i = 1}^p {{\alpha _i}{h_{t - i}}}  + 
 \sum\limits_{j = 1}^q {{\beta _j}{\varepsilon ^2_{t - j}}} }
-\end{array}} \right.$${#eq:ms-model3}
+\end{array}} \right.$$ {#eq:ms-model3}
 
 [@eq:ms-model3] 式中， ${y_t}$ 表示时刻 $t$ 的收益率, $h_t$ 表示条件方差， ${e_t}$
 是均值为 $0$ ，方差相等的独立同分布随机变量序列。第一个方程为均值方程，用来描述收益
@@ -151,11 +151,11 @@ $$\left\{ {\begin{array}{l}
 设 ${y_t:t=1,2,…,T}$ 表示金融时间序列，共有 $k$ 个区制, $y_t$ 所处的区制
 用 $s_t$ 表示，即 ${(s_t)} \in \left( {1,2, \cdots ,k} \right)$ 。若 $y_t$ 满足
 
-$${y_t} = {\mu ^{(s_t)}} + {\varepsilon_t ^{(s_t)}}$$[@eq:ms-model4]
+$${y_t} = {\mu ^{(s_t)}} + {\varepsilon_t ^{(s_t)}}$$ {#eq:ms-model4}
 
-[@eq:ms-model3]式中 $\mu ^{(s_t)}$ 表示 $y_t$ 在状态 $s_t$ 下的均值方程
+[@eq:ms-model4] 式中 $\mu ^{(s_t)}$ 表示 $y_t$ 在状态 $s_t$ 下的均值方程
 
-$${\mu ^{\left( {{s_t}} \right)}} = {f^{\left( {{s_t}} \right)}}\left( {t,{y_{t - 1}},{y_{t - 2}}, \cdots } \right)$$
+$${\mu ^{\left( {{s_t}} \right)}} = {f^{\left( {{s_t}} \right)}}\left( {t,{y_{t - 1}},{y_{t - 2}}, \cdots } \right)$${#eq:ms-model5}
 
 $\varepsilon _t^{{(s_t)}}$ 表示 $y_t$ 在状态 $s_t$ 下的条件方差方程，服从
 如下 $GARCH(p,q)$ 模型：
@@ -164,9 +164,9 @@ $$\left\{ {\begin{array}{l}
 {{\varepsilon _t^{{(s_t)}}} = \sqrt {{h_t^{{(s_t)}}}} {e_t}} \\
 {{h_t^{{(s_t)}}} = {\omega ^{(s_t)}} + \sum\limits_{i = 1}^p {{\alpha _i^{{(s_t)}}}{h_{t-i}^{(s_t)}}}  + 
 \sum\limits_{j = 1}^q {{\beta _j^{{(s_t)}}}{\varepsilon _{t-j}^{2(s_t)}}} }
-\end{array}} \right.$$[@eq:ms-model5]
+\end{array}} \right.$${#eq:ms-model6}
 
-[@eq:ms-model5]式中 ${e_t}$ 是均值为 $0$ ，方差相等的独立同分布随机变量序列。
+[@eq:ms-model6]式中 ${e_t}$ 是均值为 $0$ ，方差相等的独立同分布随机变量序列。
 $\omega^{(s_t)}$ , $\alpha ^{(s_t)}$ , $\beta ^{(s_t)}$ 分别表示在当前区制下的各参数
 的值。不同区制的转移由一个 $k$ 状态的的马尔科夫随机过程控制，状态转移矩阵如下：
 
@@ -175,9 +175,9 @@ $$P = \left[{\begin{array}{cccc}
 {{p_{21}}}&{{p_{22}}}& \cdots &{p_{2k}}\\
  \vdots & \vdots & \ddots & \vdots \\
 {{p_{k1}}}&{{p_{k2}}}& \cdots &{{p_{kk}}}
-\end{array}} \right]$$[@eq:ms-model6]
+\end{array}} \right]$${#eq:ms-model7}
 
-[@eq:ms-model6]式中 ${p_{i,j}}$ 表示从状态 $j$ 转移到状态 $i$ 的概率。
+[@eq:ms-model7]式中 ${p_{i,j}}$ 表示从状态 $j$ 转移到状态 $i$ 的概率。
 
 混合正态分布是由两个或两个以上正态分布的加权组合形成的分布，且任意两个正态分布
 之间均是独立的，因此混合正态分布也可以理解为马尔科夫转换模型的一个特例。由于不
@@ -191,17 +191,17 @@ $$P = \left[{\begin{array}{cccc}
 
 银行间同业拆借利率是我国最早市场化的利率，在我国的利率体系中扮演着重要的角色。
 其中上海银行间同业拆借利率(Shanghai Interbank Offered Rate,SHIBOR)自 $2006$ 年 $10$ 月
-成立以来尤受重视。目前公布的品种依据时间划分主要包括隔夜（O/N）、 $1$ 周（ $1$ W）、
- $2$ 周（ $2$ W）、 $1$ 个月（ $1$ M）等品种。
+成立以来尤受重视。目前公布的品种依据时间划分主要包括隔夜（O/N）、 $1$ 周（ $1W$ ）、
+ $2$ 周（ $2W$ ）、 $1$ 个月（ $1M$ ）等品种。
 
 本文所收集的样本区间是 $2006$ 年 $10$ 月 $8$ 日至 $2018$ 年 $12$ 月 $29$ 日，总
 计 $3060$ 个SHIBOR隔夜拆借率数据。数据全部来自于上海银行间同业拆借利率官
 网(http://www.shibor.org/)。假设 ${R_t}$ 为第 $t$ 期的隔夜拆借利率，在探讨金融时间
 序列变化时，为了消除数据的非平稳性，常常使用对数收益率：
 
-$${r_t} = \ln {R_t} - \ln {R_{t - 1}}$$
+$${r_t} = \ln {R_t} - \ln {R_{t - 1}}$${#eq:ms-model8}
 
-其中， ${R_{t - 1}}$ 为上一期的隔夜拆借利率，通过计算，可以得到3059个上海银行隔夜
+其中， ${R_{t - 1}}$ 为上一期的隔夜拆借利率，通过计算，可以得到 $3059$ 个上海银行隔夜
 同业拆借的收益率的时间序列。SHIBOR隔夜拆借利率和对数收益率时序图如下：
 
 ```{r setup, include=FALSE}
@@ -250,14 +250,15 @@ for (i in 1 : 3059) {shibor.rt[i] <- (log(shibor[i+1])-log(shibor[i]))}
 
 ```{r,eval=T,echo=FALSE,fig.cap = "图1 SHIBOR隔夜拆放利率和对数收益率时序图"}
 par(mfrow=c(2,1))
+par(mar=c(2,4,1,2))
 plot(shibor.date,shibor,type="l",xlab="日期",ylab="隔夜拆借利率")
 plot(shibor.date[-1],shibor.rt,type="l",xlab="日期",ylab="对数收益率",cex.main=0.95,las=1)
 #显然具有波动应聚集的特征
 ```
 
-由图1可以看出，SHIBOR隔夜拆借利率在2006-2010年波动幅度较平稳，在2010-2016年
-波动幅度较大，在2016-2018年波动趋于平稳。对数收益率序列的方差随时间变化而变化，而
-且有时变化得十分剧烈。同时，对数收益率的波动存在显著的波动集群效应，大波动后面跟随
+由图 $1$ 可以看出，SHIBOR隔夜拆借利率在 $2006$ - $2010$ 年波动幅度较平稳，在 $2010$ - $2016$ 年
+波动幅度较大，在 $2016$ - $2018$ 年波动趋于平稳。对数收益率序列的方差随时间变化而变化，
+而且有时变化得十分剧烈。同时，对数收益率的波动存在显著的波动集群效应，大波动后面跟随
 着大波动，小波动后跟随着小波动，且大波动率和小波动率的时期交替出现。
 
 ## 数据探索性分析
@@ -279,9 +280,9 @@ kable(shibor.rt2,row.names =F,align = "c",caption="样本描述性分析结果")
 ```
 
 对数收益率的偏度为`r shibor.rt2[1,3] `，峰度为`r shibor.rt2[1,4] `，而正态分布的偏
-度和峰度均为0，故对数收益率序列具有右偏性和尖峰性，初步判断不服从正态分布。
+度和峰度均为 $0$ ，故对数收益率序列具有右偏性和尖峰性，初步判断不服从正态分布。
 
-```{r,eval=T,echo=F,fig.align="center",fig.cap="图2 shibor收益率频率分布直方图和正态Q-Q图"}
+```{r,eval=T,echo=F,fig.align="center",fig.cap="图2 SHIBOR收益率频率分布直方图和正态Q-Q图"}
 par(mfrow=c(1,2))
 #绘制直方图
 hist(shibor.rt,main=NULL,breaks = 50)
@@ -291,7 +292,7 @@ qqnorm(shibor.rt,main =NULL)
 qqline(shibor.rt)                #QQ图检验非正态
 ```
 
-图2的直方图和QQ图也显示对数收益率序列不服从正态分布。直方图中，对数收益率序列的尾
+图 $2$ 的直方图和QQ图也显示对数收益率序列不服从正态分布。直方图中，对数收益率序列的尾
 部明显长于普通正态分布，具有金融序列的尖峰厚尾特征。QQ图可以直观的验证一组数据是否
 服从正态分布，图中对数收益率的散点明显偏离代表正态分布的直线，且在左侧表现出散点图
 分布下摆的趋势，右侧表现出分布上扬的趋势，说明该序列具有明显的尖峰厚尾特征。
@@ -302,8 +303,8 @@ jarque.bera.test(shibor.rt)    #JB检验非正态
 ```
 
 以上均是描述性分析得出的初步判断，为了更加科学地判断收益率序列的特征，采用
-J-B（Jarque-Bera）统计量对收益率数据进行正态性检验，统计量J-B对应的p值为2e-16,
-小于显著性水平0.05，故拒绝原假设，验证了之前收益率数据不服从正态分布的判断。
+J-B（Jarque-Bera）统计量对收益率数据进行正态性检验，统计量J-B对应的p值为 $2e-16$ ,
+小于显著性水平 $0.05$ ，故拒绝原假设，验证了之前收益率数据不服从正态分布的判断。
 
 ### 平稳性检验
 
@@ -312,13 +313,13 @@ J-B（Jarque-Bera）统计量对收益率数据进行正态性检验，统计量
 pp.test(shibor.rt)  #平稳
 ```
 
-在对时间序列进行分析时，必须要进行平稳性检验。通过使用适用于异方差场合的PP检验法(P
-hillips-Person Test)对SHIBOR对数收益率序列进行检验发现，相关统计量对应的P值为0.01，小于0.05，
-表明该序列是平稳的。
+在对时间序列进行分析时，必须要进行平稳性检验。通过使用适用于异方差场合的PP检验法
+(Phillips-Person Test)对SHIBOR对数收益率序列进行检验发现，相关统计量对应的P值
+为 $0.01$ ，小于 $0.05$ ，表明该序列是平稳的。
 
 ### 自相关性检验
 
-```{r, eval=T, echo=F,fig.align="center",fig.cap="图3 shibor收益率自相关图和偏自相关图"}
+```{r, eval=T, echo=F,fig.align="center",fig.cap="图3 SHIBOR收益率自相关图和偏自相关图"}
 #自相关性检验
 par(mfrow=c(1,2)) 
 acf(shibor.rt,main="",xlab="滞后期",ylab="ACF")#画自相关图
@@ -347,26 +348,31 @@ auto.arima(shibor.rt)
 resi<-residuals(fit2,standardize=T)#获得标准化残差
 res.ts<-ts(resi,frequency = 250)
 ```
-```{r, eval=T, echo=F}
-plot(res.ts,type="l")
-```
-```{R,eval=T,include=F}
+
+```{r,eval=T,include=F}
 Box.test(resi,lag=10,type = "Ljung")
 ```
+
+
 
 对上海银行间隔夜拆放利率进行自相关检验，这里分别运用自相关系数、偏自相关系数和Ljung-Box 
 Q统计量对SHIBOR对数收益率序列进行自相关分析。
 
-Ljung-Box Q统计量的值为107.12，对应p值为6.7e-16,远小于显著性水平0.05，故收益率序列为非
-白噪声序列，具有较强的自相关性，需要进一步提取观察值序列的相关信息。综合之前的平稳性检验
-，可以判断对数收益率序列是一个蕴涵相关信息的平稳序列，故建立ARMA(p,q)线性模型来拟合该序
-列的变化过程。
+Ljung-Box Q统计量的值为 $107.12$ ，对应p值为 $6.7e-16$ ,远小于显著性水平 $0.05$ ，
+故收益率序列为非白噪声序列，具有较强的自相关性，需要进一步提取观察值序列的相关信息。
+综合之前的平稳性检验，可以判断对数收益率序列是一个蕴涵相关信息的平稳序列，故建
+立ARMA(p,q)线性模型来拟合该序列的变化过程。
 
-图3中的自相关系数和偏自相关系数均显示出拖尾的性质，考虑到模型的简洁性，本文将ARMA模型参数p,q
-的取值设置为1，2，尝试使用ARMA(1,1)、ARMA(1,2)、ARMA(2,1)、ARMA(2,2)对序列进行拟合。最终根据
-参数显著性检验以及AIC和BIC准则选择最优模型为ARMA(2,1)，其AIC和BIC值最小，分别为-6734.29和-6704.16。
-根据已经得出的参数估计值，可以获得ARMA(2,1)模型的残差序列，如图4所示。对其进行白噪声检验，
-Ljung-Box Q统计量显示残差序列无自相关性，p值为0.0074，小于0.05的显著性水平。
+```{r, eval=T, echo=F,fig.align="center",fig.cap="图4 SHIBOR收益率残差序列图"}
+plot(res.ts,type="l")
+```
+图 $3$ 中的自相关系数和偏自相关系数均显示出拖尾的性质，考虑到模型的简洁性，本文将ARMA模型参数p,q
+的取值设置为 $1$ ， $2$ ，尝试使用ARMA( $1$ , $1$ )、ARMA( $1$ , $2$ )、
+ARMA( $2$ , $1$ )、ARMA( $2$ , $2$ )对序列进行拟合。最终根据参数显著性检验以
+及AIC和BIC准则选择最优模型为ARMA( $2$ , $1$ )，其AIC和BIC值最小，
+分别为 $-6734.29$ 和 $-6704.16$ 。根据已经得出的参数估计值，
+可以获得ARMA( $2$ , $1$ )模型的残差序列，如图 $4$ 所示。对其进行白噪声检验，
+Ljung-Box Q统计量显示残差序列无自相关性，p值为 $0.0074$ ，小于 $0.05$ 的显著性水平。
 
 ### ARCH效应检验
 
@@ -375,13 +381,13 @@ Ljung-Box Q统计量显示残差序列无自相关性，p值为0.0074，小于0.
 ArchTest(resi,lag=12)  #存在ARCH效应
 ```
 
-观察图4中的残差序列可以发现，虽然其波动是平稳的，但在2006-2008，2010-2013，2018这些时间段波动持
-续偏大，在其余时间段波动持续偏小，呈现出聚集效应，故接下来进行ARCH效应检验。两种常用的ARCH
-检验统计方法是Portmanteau Q检验和LM检验。这里使用Portmanteau Q检验对收益率数据进行
-分析。根据R软件分析结果可知P值小2e-16,远小于0.05 ，故拒绝原数据，即认为残差平方序列自相关，残差序
-列存在ARCH效应。
+观察图 $4$ 中的残差序列可以发现，虽然其波动是平稳的，但在 $2006$ - $2008$ ， 
+$2010$ - $2013$ ， $2018$ 这些时间段波动持续偏大，在其余时间段波动持续偏小，呈现出聚集
+效应，故接下来进行ARCH效应检验。两种常用的ARCH检验统计方法是Portmanteau Q检验和LM检验。
+这里使用Portmanteau Q检验对收益率数据进行分析。根据R软件分析结果可知P值小 $2e-16$ ,
+远小于 $0.05$  ，故拒绝原数据，即认为残差平方序列自相关，残差序列存在ARCH效应。
 
-```{r, eval=T, include=F}
+```{r, eval=F, echo=F}
 #拟合GARCH
 library(timeDate)
 library(timeSeries)
@@ -396,7 +402,8 @@ pacf(rt.square,main="",xlab="Lag(d)",ylab="PACF",las=1)#画偏自相关图
 title(main = "(d)the PACF of resi Square",cex.main=0.95)
 Box.test(rt.square,lag = 10,type = "Ljung")
 ```
-```{r, eval=T, include=F}
+
+```{r, eval=F, echo=F}
 #假定条件分布为正态分布
 ##拟合GARCH(1,1)模型
 m1<-garchFit(~arma(1,2)+garch(1,1),data =shibor.rt ,trace = F)
@@ -434,8 +441,13 @@ m8.res=c("m8",m8@fit$ics[-c(3,4)])
 res2=data.frame(m1.res,m2.res,m3.res,m4.res,m5.res,m6.res,m7.res,m8.res)#arma(2,1)最优
 res2#m5最优
 ```
-接下来通过对ARMA(1,2)模型的残差序列进行自相关性分析发现，自相关系数和偏自相关系数均存在一定程
-度的拖尾性，故设置ARCH效应和GARCH效应的阶数为1，2，分别构建基于正态分布和t分布的ARMA(1,2)-GARCH(1,1)、ARMA(1,2)-GARCH(2,1)、ARMA(1,2)-GARCH(1,2)、ARMA(1,2)-GARCH(2,2).结果显示基于t分布的ARMA-GARCH模型显著优于基于正态分布的模型，最终根据参数显著性和AIC、BIC准则确定最优模型为ARMA(1,2)-GARCH(1,1)-t.
+
+接下来通过对ARMA( $1$ , $2$ )模型的残差序列进行自相关性分析发现，自相关系数和偏自相
+关系数均存在一定程度的拖尾性，故设置ARCH效应和GARCH效应的阶数为 $1$ ， $2$ ，分别构建
+基于正态分布和t分布的ARMA( $1$ , $2$ )-GARCH( $1$ , $1$ )、ARMA( $1$ , $2$ )
+-GARCH( $2$ , $1$ )、ARMA( $1$ , $2$ )-GARCH( $1$ , $2$ )、ARMA( $1$ , $2$ )-
+GARCH( $2$ , $2$ )。结果显示基于t分布的ARMA-GARCH模型显著优于基于正态分布的模型，最终
+根据参数显著性和AIC、BIC准则确定最优模型为ARMA( $1$ , $2$ )-GARCH( $1$ , $1$ )-t.
 
 ```{r, eval=F, echo=T}
 #拟合混合分布GARCH
