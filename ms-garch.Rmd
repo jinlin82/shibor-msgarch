@@ -13,7 +13,7 @@ output:
     keep_md: true
     toc: false
     pandoc_args: ["--filter", "pandoc-crossref", "-M", "eqnPrefix="]
-  pdf_document:
+  bookdown::pdf_document2:
     keep_tex: yes
     latex_engine: xelatex
     md_extensions: +east_asian_line_breaks
@@ -275,7 +275,8 @@ shibor.rt1<-basicStats(shibor.rt)
 shibor.rt2<- as.data.frame(t(shibor.rt1[c(7,14,16,15),]))
 colnames(shibor.rt2) <- c("均值","标准差","偏态系数","峰态系数")
 
-kable(shibor.rt2,row.names =F,align = "c", caption="样本描述性分析结果")
+kable(shibor.rt2,row.names =F,align = "c", caption="样本描述性分析结果",
+      longtable = TRUE, booktabs = TRUE, linesep="")
 ```
 
 从表 \@ref(tab:stat) 看出，对数收益率的偏度为`r shibor.rt2[1,3] `，峰度
