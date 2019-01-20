@@ -305,7 +305,7 @@ jarque.bera.test(shibor.rt)    #JB检验非正态
 ```
 
 以上均是描述性分析得出的初步判断，为了更加科学地判断收益率序列的特征，采用
-J-B（Jarque-Bera）统计量对收益率数据进行正态性检验，统计量J-B对应的p值为2e-16,
+J-B（Jarque-Bera）统计量对收益率数据进行正态性检验，统计量J-B对应的p值小于2e-16,
 小于显著性水平0.05，故拒绝原假设，验证了之前收益率数据不服从正态分布的判断。
 
 ### 平稳性检验
@@ -317,7 +317,7 @@ pp.test(shibor.rt)  #平稳
 
 在对时间序列进行分析时，必须要进行平稳性检验。通过使用适用于异方差场合的PP检验法
 (Phillips-Person Test)对SHIBOR对数收益率序列进行检验发现，相关统计量对应的P值
-为0.01，小于0.05，表明该序列是平稳的。
+远小于0.05，表明该序列是平稳的。
 
 ### 自相关性检验
 
@@ -333,7 +333,7 @@ title(main="(b)the PACF of Return",cex.main=0.95)
 ```{r,eval=T,include=F}
 acf(shibor.rt,plot = F,lag.max = 15)
 pacf(shibor.rt,plot = F,lag.max = 15)
-Box.test(shibor.rt,lag=10,type = "Ljung")
+Box1=Box.test(shibor.rt,lag=10,type = "Ljung")
 library(forecast)
 library(stats)
 fit1=Arima(shibor.rt,order = c(1,0,1))
@@ -352,13 +352,13 @@ res.ts<-ts(resi,frequency = 250)
 ```
 
 ```{r,eval=T,include=F}
-Box.test(resi,lag=10,type = "Ljung")
+Box2=Box.test(resi,lag=10,type = "Ljung")
 ```
 
 对上海银行间隔夜拆放利率进行自相关检验，这里分别运用自相关系数、偏自相关系数和Ljung-Box 
 Q统计量对SHIBOR对数收益率序列进行自相关分析。
 
-Ljung-Box Q统计量的值为107.12，对应p值为6.7e-16,远小于显著性水平0.05，
+Ljung-Box Q统计量的值为`r Box1$statistic`，对应p值为`r Box1$p.value`,远小于显著性水平0.05，
 故收益率序列为非白噪声序列，具有较强的自相关性，需要进一步提取观察值序列的相关信息。
 综合之前的平稳性检验，可以判断对数收益率序列是一个蕴涵相关信息的平稳序列，故建
 立ARMA(p,q)线性模型来拟合该序列的变化过程。
@@ -370,9 +370,9 @@ plot(shibor.date[-1],res.ts,type="l",xlab="日期",ylab="残差",cex.main=0.95,l
 的取值设置为1，2，尝试使用ARMA(1,1)、ARMA(1,2)、
 ARMA(2,1)、ARMA(2,2)对序列进行拟合。最终根据参数显著性检验以
 及AIC和BIC准则选择最优模型为ARMA(1,2)，其AIC和BIC值最小，
-分别为-6734.29和-6704.16。根据已经得出的参数估计值，
+分别为`r fit2$aic`和`r BIC(fit2)`。根据已经得出的参数估计值，
 可以获得ARMA(1,2)模型的残差序列，如图4所示。对其进行白噪声检验，
-Ljung-Box Q统计量显示残差序列无自相关性，p值为0.0074，小于0.05的显著性水平。
+Ljung-Box Q统计量显示残差序列无自相关性，p值为`r Box2$p.value`，小于0.05的显著性水平。
 
 ### ARCH效应检验
 
@@ -433,7 +433,7 @@ m6.res=c("sged",m6@fit$ics[-c(3,4)])
 
 res=data.frame(m1.res,m2.res,m3.res,m4.res,m5.res,m6.res)
 res1=t(res)
-colnames(res1)=c("模型名称","分布形态","AIC","BIC")
+colnames(res1)=c("分布形态","AIC","BIC")
 rownames(res1)=c("ARMA(1,2)-GARCH(1,1)","ARMA(1,2)-GARCH(1,1)","ARMA(1,2)-GARCH(1,1)","ARMA(1,2)-GARCH(1,1)","ARMA(1,2)-GARCH(1,1)","ARMA(1,2)-GARCH(1,1)")
 kable(res1,caption = "ARMA-GARCH模型优度总览")
 ```
@@ -442,7 +442,7 @@ kable(res1,caption = "ARMA-GARCH模型优度总览")
 者的研究表明，低阶GARCH能够刻画时间序列的异方差现象，且在精度方面不存在太大的差距，故设置
 ARCH项和GARCH项的阶数均为1。在分布类型的选取方面，基于3.2.1节的分析可知，SHIBOR对数收益率
 序列存在偏态和尖峰厚尾特征，因此分别构建基于正态分布、t分布、ged以及它们各自的偏态分布的
-ARMA(1,2)-GARCH(1,1)。 从\@ref(tab:stat2)的 结果可以看出基于t分布的ARMA-GARCH模型显著优于基于正态分布和广义误差分布
+ARMA(1,2)-GARCH(1,1)。 从表\@ref(tab:stat2)的 结果可以看出基于t分布的ARMA-GARCH模型显著优于基于正态分布和广义误差分布
 的模型，且基于偏态t分布的模型表现更佳。最终根据参数显著性和AIC、BIC准则确定以上6个模型中的
 最优模型为ARMA(1,2)-GARCH(1,1)-sstd。
 
@@ -617,10 +617,10 @@ m33.res=c("sged-sged-sged",summary(m33)$AIC,summary(m33)$BIC)
 ##四阶段混合
 ###混合形式为sGARCH、sGARCH、sGARCH、sGARCH
 ####混合分布的构成为norm、norm、norm、norm#####无结果
-spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("norm", "norm","norm","norm")))
-m34=FitML(spec,shibor.rt)
+#spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("norm", "norm","norm","norm")))
+#m34=FitML(spec,shibor.rt)
 #summary(m34)
-m34.res=c("norm-norm-norm-norm",summary(m34)$AIC,summary(m34)$BIC)
+#m34.res=c("norm-norm-norm-norm",summary(m34)$AIC,summary(m34)$BIC)
 
 ####混合分布的构成为snorm、snorm、snorm、snorm
 spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH","sGARCH")),distribution.spec = list(distribution=c("snorm", "snorm","snorm","snorm")))
@@ -766,6 +766,7 @@ m57=FitML(spec,shibor.rt)
 #summary(m57)
 m57.res=c("sged-sged-sged-sged",summary(m57)$AIC,summary(m57)$BIC)
 ```
+##基于MS-GARCH模型构建
 
 本文之前的分析指出SHIBOR对数收益率序列有阶段性波动特征，2006-2010年、2010-2016年、
 2016-2018年这3个时间段呈现不同的波动幅度。而以上所使用的模型均是在假定某个单一分布
@@ -776,22 +777,62 @@ m57.res=c("sged-sged-sged-sged",summary(m57)$AIC,summary(m57)$BIC)
 构建MSGARCH模型时，同样选用GARCH(1,1)结构；考虑到对数收益率序列的分布特征，分布类
 型依次选取传统的正态分布、对厚尾特征刻画更具灵活性的广义t分布和广义误差分布，以及
 它们的偏态分布，即“norm”、"std"、"ged"、“snorm”、"sstd"、"sged"共6种。另外设置区制K
-为2、3、4共3种情况。最终共得到51个模型，模型优度如\@ref(tab:stat3)所示：
+为2、3、4共3种情况。最终共得到51个模型，模型优度如表\@ref(tab:stat3)所示：
 
 ```{r stat3,eval=T,echo=F,message=F,warning=F}
 res=data.frame(m7.res,m8.res,m9.res,m10.res,m11.res,m12.res,m13.res,m14.res,m15.res,m16.res,m17.res,m18.res,m19.res,m20.res,m21.res,m22.res,m23.res,m24.res,m25.res,m26.res,m27.res,m28.res,m29.res,m30.res,m31.res,m32.res,m33.res,m35.res,m36.res,m37.res,m38.res,m39.res,m40.res,m41.res,m42.res,m43.res,m44.res,m45.res,m46.res,m47.res,m48.res,m49.res,m50.res,m51.res,m52.res,m53.res,m54.res,m55.res,m56.res,m57.res)
 res2=t(res)
-colnames(res2)=c("模型名称","分布形态","AIC","BIC")
+colnames(res2)=c("分布形态","AIC","BIC")
 rownames(res2)=c("MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(2)-GARCH","MS(3)-GARCH","MS(3)-GARCH","MS(3)-GARCH","MS(3)-GARCH","MS(3)-GARCH","MS(3)-GARCH","MS(4)-GARCH","MS(4)-GARCH","MS(4)-GARCH","MS(4)-GARCH","MS(4)-GARCH","MIX(2)-GARCH","MIX(2)-GARCH","MIX(2)-GARCH","MIX(2)-GARCH","MIX(2)-GARCH","MIX(2)-GARCH","MIX(3)-GARCH","MIX(3)-GARCH","MIX(3)-GARCH","MIX(3)-GARCH","MIX(3)-GARCH","MIX(3)-GARCH","MIX(4)-GARCH","MIX(4)-GARCH","MIX(4)-GARCH","MIX(4)-GARCH","MIX(4)-GARCH","MIX(4)-GARCH")
 kable(res2,caption = "MS-GARCH模型与混合分布GARCH模型优度总览")
 #以上模型根据AIC和BIC准则，选择41、53
 ```
 
 其中包含k个区制的MS-GARCH模型用“MS(K)-GARCH”表示，包含k种分布的混合分布GARCH模型
-用“MIX(k)-GARCH”表示。根据AIC与BIC准则，
+用“MIX(k)-GARCH”表示。根据AIC与BIC准则，综合选择的最优模型为MS(4)-GARCH模型，且各区制
+的分布均为sged分布。该模型的相关参数如表\@ref(tab:stat4)所示：
 
+```{r stat4,eval=T,echo=F,message=F,warning=F}
+res=data.frame(m41$par[1:5],m41$par[6:10],m41$par[11:15],m41$par[16:20])
+colnames(res)=c("第一区制","第二区制","第三区制","第四区制")
+rownames(res)=c("omega","alpha","beta","skewed","shape")
+kable(res,caption = "MS(4)-GARCH-sged模型估计参数总览")
+```
 
+该模型中所有参数均通过显著性检验，极大似然值、AIC和BIC值分别为`r m41$loglik`、`r summary(m41)$AIC`、`r summary(m41)$BIC`。
+其中，omega表示4个区制中MS(4)-GARCH-sged中的常数项；alpha表示模型的ARCH项系数，
+其值越大，表明当期收益率对下一期波动率的影响程度越大；beta表示模型的GARCH项系数，
+该值表示当期波动率对下一期波动率的影响；skewed和shape分别指sged的偏度参数和形状参数，
+shape值为1表明分布为对称分布，大于1 表明为右偏分布，小于1表明为左偏分布。因此该最优模型
+在四个区制中分别为对称分布、右偏分布、右偏分布、左偏分布。
 
+分区制对各项系数进行比较可以发现，第一区制中GARCH项系数值为`r m41$par[3]`，远远大于ARCH项系数
+`r m41$par[2]`，表明在第一状态中，当期对数收益率序列的波动率对下一期的波动率起决定性作用，
+这也说明第一区制的波动率具有聚集效应，具有长期记忆性。第三区制的结果类似。但在第二区制和第
+四区制中，情况恰好相反，ARCH项系数在下一期的波动率变化中起更大作用，说明当期的收益率对
+下一期的波动率影响更大。其中第四区制，GARCH项系数为0，表明第四区制为ARCH-sged模型，下
+一期波动率只受当期收益率影响。以上分析进一步说明，对数收益率的确存在区制的转换，不同区制
+呈现不同特征。
+
+```{r stat5,eval=T,echo=F,message=F,warning=F}
+P1=1-sum(m41$par[21:23])
+P2=1-sum(m41$par[24:26])
+P3=1-sum(m41$par[27:29])
+P4=1-sum(m41$par[30:32])
+Pr=t(data.frame(c(m41$par[21:23],P1),c(m41$par[24:26],P2),c(m41$par[27:29],P3),c(m41$par[30:32],P4)))
+colnames(Pr)=c("一","二","三","四")
+rownames(Pr)=c("一","二","三","四")
+kable(Pr,caption = "MS(4)-GARCH-sged模型转移矩阵")
+```
+
+表 \@ref(tab:stat5) 展示了该模型的转移矩阵，其中转移矩阵中的每个元素表示从当前状态转移到下一状态的概率。以第一行为例，由于最优模型有4
+个区制，故由当前t时刻的第一状态转移到下一时刻共有4种情况，4个元素分别对应转移到4个区制
+的概率，其和为1。 $P_{11}$ 值为`r m41$par[21]`，表示在t时刻所处状态为第一区制的情况下，下一
+时刻仍为第一区制的概率，其他元素类似。矩阵显示对角线元素在各行中均为最大值，即两个时刻连续
+保持同一状态的概率最大，对数收益率的波动更容易保持一个状态不变。同时，尽管转移到其他状
+态的概率较小，但状态之间的转移的确存在。若p值为0，则表示不存在相应的状态转换，如 $P_{42}$ 
+的值为0，即表示不存在由第4区制转移到第2区制的情况，但第2区制转移到第4区制的情况以`r P2`
+的概率发生。
 
 ```{r,eval=F, echo=F}
 auto.arima(shibor.rt)
