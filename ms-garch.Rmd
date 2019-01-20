@@ -774,7 +774,7 @@ View(res3)
 构建MSGARCH模型时，同样选用GARCH(1,1)结构；考虑到对数收益率序列的分布特征，分布类
 型依次选取传统的正态分布、对厚尾特征刻画更具灵活性的广义t分布和广义误差分布，以及
 它们的偏态分布，即“norm”、"std"、"ged"、“snorm”、"sstd"、"sged"共6种。另外设置区制K
-为2、3、4。
+为2、3、4共3种情况。
 ```{r,eval=F, echo=F}
 auto.arima(shibor.rt)
 library(rugarch)
