@@ -402,52 +402,44 @@ pacf(rt.square,main="",xlab="Lag(d)",ylab="PACF",las=1)#画偏自相关图
 title(main = "(d)the PACF of resi Square",cex.main=0.95)
 Box.test(rt.square,lag = 10,type = "Ljung")
 ```
-
+## ARMA-GARCH模型构建
 ```{r, eval=F, echo=F}
-#假定条件分布为正态分布
-##拟合GARCH(1,1)模型
+#ARMA-GARCH
+##拟合基于正态分布的arma(1,2)-GARCH(1,1)模型
 m1<-garchFit(~arma(1,2)+garch(1,1),data =shibor.rt ,trace = F)
 summary(m1)
 m1.res=c("m1",m1@fit$ics[-c(3,4)])
-##拟合GARCH(2,1)模型
-m2<-garchFit(~arma(1,2)+garch(2,1),data =shibor.rt,trace = F)
-summary(m2)#系数不显著，舍去
+##拟合基于t分布的arma(1,2)GARCH(1,1)模型
+m2<-garchFit(formula = ~arma(1,2)+garch(1,1),data =shibor.rt,trace = F,cond.dist = "std")
+summary(m2)#
 m2.res=c("m2",m2@fit$ics[-c(3,4)])
-##拟合GARCH(1,2)模型
-m3<-garchFit(~arma(1,2)+garch(1,2),data =shibor.rt,trace = F)
-summary(m3)
+##拟合基于ged分布的arma(1,2)GARCH(1,1)模型
+m3<-garchFit(formula = ~arma(1,2)+garch(1,1),data =shibor.rt,trace = F,cond.dist = "ged")
+summary(m3)#所估参数的残差分析出现空值，舍去
 m3.res=c("m3",m3@fit$ics[-c(3,4)])
-##拟合GARCH(2,2)模型
-m4<-garchFit(~arma(1,2)+garch(2,2),data =shibor.rt,trace = F)
-summary(m4)#所估参数出现空值，舍去
+##拟合拟合基于snorm分布的arma(1,2)GARCH(1,1)模型
+m4<-garchFit(formula = ~arma(1,2)+garch(1,1),data =shibor.rt,trace = F,cond.dist = "snorm")
+summary(m4)#
 m4.res=c("m4",m4@fit$ics[-c(3,4)])
-#假定条件分布为t分布
-##拟合GARCH(1,1)模型
-m5<-garchFit(formula = ~arma(1,2)+garch(1,1),data =shibor.rt,trace = F,cond.dist = "std")
+##拟合基于sstd分布的arma(1,2)GARCH(1,1)模型
+m5<-garchFit(formula = ~arma(1,2)+garch(1,1),data =shibor.rt,trace = F,cond.dist = "sstd")
 summary(m5)
 m5.res=c("m5",m5@fit$ics[-c(3,4)])
-##拟合GARCH(2,1)模型
-m6<-garchFit(formula = ~arma(1,2)+garch(2,1),data =shibor.rt,trace = F,cond.dist = "std")
+##拟合基于sged分布的arma(1,2)GARCH(1,1)模型
+m6<-garchFit(formula = ~arma(1,2)+garch(1,1),data =shibor.rt,trace = F,cond.dist = "sged")
 summary(m6)#所估参数出现空值，舍去
 m6.res=c("m6",m6@fit$ics[-c(3,4)])
-##拟合GARCH(1,2)模型
-m7<-garchFit(formula = ~arma(1,2)+garch(1,2),data =shibor.rt,trace = F,cond.dist = "std")
-summary(m7)
-m7.res=c("m7",m7@fit$ics[-c(3,4)])
-##拟合GARCH(2,2)模型
-m8<-garchFit(formula = ~arma(1,2)+garch(2,2),data =shibor.rt,trace = F,cond.dist = "std")
-summary(m8)#所估参数出现空值，舍去
-m8.res=c("m8",m8@fit$ics[-c(3,4)])
-res2=data.frame(m1.res,m2.res,m3.res,m4.res,m5.res,m6.res,m7.res,m8.res)#arma(2,1)最优
-res2#m5最优
+res2=data.frame(m1.res,m2.res,m3.res,m4.res,m5.res,m6.res)#
+res2#m5基于sstd分布的arma(1,2)GARCH(1,1)模型最优
 ```
 
 由于高阶GARCH模型会导致ARCH项和GARCH项系数过多，不利于模型稳定和参数估计，而且之前大量学
 者的研究表明，低阶GARCH能够刻画时间序列的异方差现象，且在精度方面不存在太大的差距，故设置
-ARCH项和GARCH项的阶数为1， 2。分别构建基于正态分布和t分布的ARMA(1,2)-GARCH(1,1)、
-ARMA(1,2)-GARCH(2,1)、ARMA(1,2)-GARCH(1,2)、ARMA(1,2)-GARCH(2,2)。结果显示基于t分
-布的ARMA-GARCH模型显著优于基于正态分布的模型，最终根据参数显著性和AIC、BIC准则确定最优模型
-为ARMA(1,2)-GARCH(1,1)-t.
+ARCH项和GARCH项的阶数均为1。在分布类型的选取方面，基于3.2.1节的分析可知，SHIBOR对数收益率
+序列存在偏态和尖峰厚尾特征，因此分别构建基于正态分布、t分布、ged以及它们各自的偏态分布的
+ARMA(1,2)-GARCH(1,1)。结果显示基于t分布的ARMA-GARCH模型显著优于基于正态分布和广义误差分布
+的模型，且基于偏态t分布的模型表现更佳。最终根据参数显著性和AIC、BIC准则确定以上6个模型中的
+最优模型为ARMA(1,2)-GARCH(1,1)-st.
 
 ```{r, eval=F, echo=F}
 #拟合混合分布GARCH
@@ -772,7 +764,18 @@ m59.res=c("m59",m59$loglik,summary(m59)$AIC,summary(m59)$BIC)
 res3=data.frame(m9.res,m10.res,m11.res,m12.res,m13.res,m14.res,m15.res,m16.res,m17.res,m18.res,m19.res,m20.res,m21.res,m22.res,m23.res,m24.res,m25.res,m26.res,m27.res,m28.res,m29.res,m30.res,m31.res,m32.res,m33.res,m34.res,m35.res,m37.res,m38.res,m39.res,m40.res,m41.res,m42.res,m43.res,m44.res,m45.res,m46.res,m47.res,m48.res,m49.res,m50.res,m51.res,m52.res,m53.res,m54.res,m55.res,m56.res,m57.res,m58.res,m59.res)
 View(res3)
 #以上模型根据AIC和BIC准则，选择41、53
+```
+本文之前的分析指出SHIBOR对数收益率序列有阶段性波动特征，2006-2010年、2010-2016年、
+2016-2018年这3个时间段呈现不同的波动幅度。而以上所使用的模型均是在假定某个单一分布
+的前提下进行的，在描述对数收益率序列的波动变化过程时，具有片面性和不准确性。故接下
+来使用MSGARCH模型进行序列拟合，通过一个不可观测的一阶内生遍历马尔科夫链 ${s_t}$ 和转移矩
+阵P，可以实现不同区制的转换，从而对不同波动率进行不同的刻画描述，使得模型精度更高。
 
+构建MSGARCH模型时，同样选用GARCH(1,1)结构；考虑到对数收益率序列的分布特征，分布类
+型依次选取传统的正态分布、对厚尾特征刻画更具灵活性的广义t分布和广义误差分布，以及
+它们的偏态分布，即“norm”、"std"、"ged"、“snorm”、"sstd"、"sged"共6种。另外设置区制K
+为2、3、4。
+```{r,eval=F, echo=F}
 auto.arima(shibor.rt)
 library(rugarch)
 spec <- ugarchspec(variance.model = list(model = "fGARCH", 
