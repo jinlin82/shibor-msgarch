@@ -1,27 +1,10 @@
-rm(list = ls())
-options(digits = 9)
-library(zoo)
-library(forecast)
-library(tseries)
-library(xts)
-library(ggplot2)
-library(FinTS)
-library(moments)
-library(devtools)
-library(FinTS)
-library(MSGARCH)
-library(fBasics)
-library(timeDate)
-library(timeSeries)
-library(fBasics)
-library(fGarch)
-library(forecast)
-library(stats)
-
-
 ## path <- "F:/github_repo/shibor-msgarch/" 
 ## setwd(path)
-dat=read.csv("Shibor_data.csv",header=T)
+rm(list = ls())
+options(digits = 9)
+library(MSGARCH)
+
+dat=read.csv("./data/Shibor_data.csv",header=T)
 shibor<-dat[,2]
 shibor.date<-as.Date(dat[,1])
 
@@ -30,8 +13,7 @@ shibor.rt<-diff(log(shibor))
 
 #构建残差序列
 fit=arima(shibor.rt,order = c(1,0,2))
-shibor.rt.r<-residuals(fit,standardize=T)
-
+shibor.rt.r<-residuals(fit)
 
 # 生成 loglik AIC BIC 表 函数
 msgarchres <- function(dists, data){
@@ -63,7 +45,6 @@ msgarchres <- function(dists, data){
     names(res) <- c("模型", "分布", "Loglik", "AIC", "BIC")
     return(res)
 }
-
 
 distname=c("norm","snorm","std","sstd","ged","sged")
 #各种组合方式
