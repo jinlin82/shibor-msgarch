@@ -55,18 +55,18 @@ four=expand.grid(distname,distname,distname,distname,stringsAsFactors=F)
 
 #区制为1的MS-GARCH
 system.time( stage1 <- msgarchres(one, data=shibor.rt.r) )
-
 write.csv(stage1, './result/stage1.csv')
 
 #区制为2的MS-GARCH
 system.time( stage2 <- msgarchres(two, data=shibor.rt.r) )
-
 write.csv(stage2, './result/stage2.csv')
 
 ## Donot Run
 ## 区制为3的MS-GARCH
 system.time( stage3 <- msgarchres(three, data=shibor.rt.r) )
 write.csv(stage3, './result/stage3.csv')
+
+write.csv(rbind(stage1, stage2, stage3), './result/res.csv')
 
 ## Donot Run
 #区制为4的MS-GARCH
