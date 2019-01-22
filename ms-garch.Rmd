@@ -533,7 +533,7 @@ for (i in 1:n.ots) {
 本文选取2006年10月8日至2016年3月14日消除序列自相关后的shibor收益率残差序列作为训
 练集，滚动预测2016年3月15日至2018年12月29日共700天的在险价值，VaR回测图如 图\@ref(fig:fig-ts99) 所示：
 
-```{r fig-ts99, fig.cap="5%显著性水平下VaR回测图", dev='png'}
+```{r fig-ts99, fig.cap="5%显著性水平下VaR回测图", dev='png',eval=F,echo=F,include=F}
 library("zoo")
 time.index <- zoo::index(shibor.rt.r)[(n.its + 1):(n.ots + n.its)]
 y_ots <- zoo::zoo(y.ots, order.by = time.index)
@@ -547,7 +547,7 @@ abline(h = 0)
 ```
 
 图\@ref(fig:fig-ts99) 展示了上海同业拆借利率5%分位数的VaR值。图中的散点表示shibor
-收益率残差序列，虚线表示预测的VaR值。对预测的VaR值进行
+收益率残差序列，虚线表示预测的VaR值。对预测的VaR值进行回测检验，
 ```{r,eval=F,echo=F,include=F}
 library("GAS")
 test <- GAS::BacktestVaR(data  = y.ots,
