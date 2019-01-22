@@ -414,9 +414,10 @@ BIC准则的方法，最终选择3阶段的GARCH_sstd、GARCH_sstd、GARCH_ged�
 ```{r stat2, eval=T, results='markup', cache=T}
 ### 结果使用 msgarchres.R 程序生成
 ## source(msgarch-fit.R)  ## 不要轻易运行，需要时间超过12小时，运行的结果保存为res.csv
-
+options(digits=7)
 res.table <- read.csv('./result/res.csv')
-kable(res.table, row.names =F, align = "c", caption="模型估计结果比较表",
+knitr::kable(res.table, row.names =F, align = "c", caption="模型估计结果比较表",
+      digits=7,
       longtable = TRUE, booktabs = TRUE, linesep  = "")
 ```
 
