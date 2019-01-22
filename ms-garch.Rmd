@@ -493,6 +493,69 @@ kable(Pr,caption = "MS(4)-GARCH-sged模型转移矩阵")
 ### 最优模型意义
 
 ### VaR 计算
+```{r, eval=F,echo=F,include=F}
+#求VaR
+n.ots    <- 700 # number of out-of-sample evaluation 
+n.its    <- 2359 # fit sample size
+alpha    <- 0.05 # risk Level 
+k.update <- 100  # estimation frequency
+
+## Initialization 
+VaR   <- matrix(NA, nrow = n.ots, ncol = 1)
+y.ots <- matrix(NA, nrow = n.ots, ncol = 1)
+model.fit <- vector(mode = "list", length = 1)
+
+# iterate over out-of-sample time
+for (i in 1:n.ots) { 
+  cat("Backtest - Iteration: ", i, "\n")
+  y.its    <- shibor.rt.r[i:(n.its + i - 1)] # in-sample data 
+  y.ots[i] <- shibor.rt.r[n.its + i]         # out-of-sample data
+
+    if (k.update == 1 || i %% k.update == 1) {
+      cat("Model is reestimated\n")
+      model.fit[[1]] <- FitML(spec = spec, data = y.its, 
+                              ctr = list(do.se = FALSE)) 
+    }
+    # calculate VaR 1-step ahead
+    VaR[i,1] <- Risk(model.fit[[1]]$spec, par = model.fit[[1]]$par,
+                     data = y.its,
+                     n.ahead = 1,
+                     alpha   = alpha,
+                     do.es   = FALSE,
+                     do.its  = FALSE)$VaR
+  }                                
+```
+为了对同业拆借市场的利率风险进行控制，可以借助“在险价值”(Value-at-Risk,简称VaR)来
+进行准确测度。在险价值表示在一定置信区间内，受到正常的波动因素影响下，金融资产的
+损失可能存在的最大值，即收益率密度曲线的一个分位点。若 $VaR>r_t$ ,则表明该模型在第t
+天具有良好的表现。
+
+本文选取2006年10月8日至2016年3月14日消除序列自相关后的shibor收益率残差序列作为训
+练集，滚动预测2016年3月15日至2018年12月29日共700天的在险价值，VaR回测图如 图\@ref(fig:fig-ts99) 所示：
+
+```{r fig-ts99, fig.cap="5%显著性水平下VaR回测图", dev='png'}
+library("zoo")
+time.index <- zoo::index(shibor.rt.r)[(n.its + 1):(n.ots + n.its)]
+y_ots <- zoo::zoo(y.ots, order.by = time.index)
+VaR   <- zoo::zoo(VaR, order.by = time.index)
+
+par(mfrow = c(1, 1))
+plot(y_ots, type = 'p', las = 1, xlab = "Date (year)",
+     ylab = "", col = "black", cex.axis = 1.5, cex.lab = 1.5,cex=0.7, pch = 19)
+lines(VaR[,1], type = 'l', col = "red", lwd = 2, lty = "dashed")
+abline(h = 0)
+```
+
+图\@ref(fig:fig-ts99) 展示了上海同业拆借利率5%分位数的VaR值。图中的散点表示shibor
+收益率残差序列，虚线表示预测的VaR值。对预测的VaR值进行
+```{r,eval=F,echo=F,include=F}
+library("GAS")
+test <- GAS::BacktestVaR(data  = y.ots,
+                         VaR   = VaR[,1],
+                          alpha = alpha)
+CC.pval <- test$LRcc[2]      
+DQ.pval <- test$DQ$pvalue 
+```
 
 # 结论
 
