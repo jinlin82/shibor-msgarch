@@ -189,7 +189,6 @@ $$P = \left[{\begin{array}{cccc}
 模型估计部分采用R软件中的MSGARCH包实现。
 
 # 实证分析
-
 ## 数据来源及数据处理
 
 银行间同业拆借利率是我国最早市场化的利率，在我国的利率体系中扮演着重要的角色。
@@ -409,8 +408,8 @@ Box.test(rt.square,lag = 10,type = "Ljung")
 2016-2018年这3个时间段呈现不同的波动幅度。而以上所使用的模型均是在假定某个单一分
 布的前提下进行的，在描述对数收益率序列的波动变化过程时，具有片面性和不准确性。故
 接下来使用MSGARCH模型进行序列拟合，通过一个不可观测的一阶内生遍历马尔科夫链
-${s_t}$ 和转移矩阵 $P$ ，可以实现不同区制的转换，从而对不同波动率进行不同的刻画描述，
-使得模型精度更高。
+${s_t}$ 和转移矩阵 $P$ ，可以实现不同区制的转换，从而对不同波动率进行不同的刻画
+描述，使得模型精度更高。
 
 由于高阶GARCH模型会导致ARCH项和GARCH项系数过多，不利于模型稳定和参数估计，而且之
 前大量学者的研究表明，低阶GARCH能够刻画时间序列的异方差现象，且在精度方面不存在
@@ -419,11 +418,10 @@ ${s_t}$ 和转移矩阵 $P$ ，可以实现不同区制的转换，从而对不�
 布类型依次选取传统的正态分布、对厚尾特征刻画更具灵活性的广义t分布和广义误差分布，
 以及它们的偏态分布，即“norm”、"std"、"ged"、“snorm”、"sstd"、"sged"共6种。另
 外设置区制K为1、2、3共3种情况。本文选用R的MSGARCH包作为计量工具。对平稳不相关但
-具有异方差性的残差序列共构建215个模型，根据参数显著性检验、极大似然值以及AIC和
-BIC准则的方法，最终选择3阶段的GARCH_sstd、GARCH_sstd、GARCH_ged为最优模型，具体
-结果详见表\@ref(tab:model-es)。
+具有条件异方差性的残差序列共构建 258 个模型，具体结果详见表\@ref(tab:model-es)。
 
-```{r model-es, eval=T, results='markup', cache=T}
+[//]: # 增加 DIC 值列
+```{r model-es, eval=T, results='markup', cache=F}
 ### 结果使用 msgarchres.R 程序生成
 ## source(msgarch-fit.R)  ## 不要轻易运行，需要时间超过12小时，运行的结果保存为res.csv
 options(digits=7)
@@ -433,17 +431,19 @@ knitr::kable(res.table, row.names =F, align = "c", caption="模型估计结果�
       longtable = TRUE, booktabs = TRUE, linesep  = "")
 ```
 
-表\@ref(tab:model-es)中包含k个区制的MS-GARCH模型用“MS(K)-GARCH”表示，包含k种分布
-的混合分布GARCH模型用“MIX(k)-GARCH”表示。前6个模型为一般的GARCH模型，假设分布
-为单一分布，即 $K = 1$ ，显然假设分布为t分布的模型显著优于正态分布和广义误差分布;
-$K = 2$ 的两区制马尔科夫转换模型共有36个，其余的216个模型为 $K = 3$ 的MSGARCH模
-型。其中最优模型为三阶段的MS-GARCH模型，且分布形式分别为sged、std、sged分布。
-
+表\@ref(tab:model-es)中包含k个区制的MS-GARCH模型用“MS(K)-GARCH”表示，包含k种分
+布的混合分布GARCH模型用“MIX(k)-GARCH”表示。前6个模型为单一区制的GARCH模型，假
+设分布为单一分布，即 $K = 1$ ，显然假设分布为t分布的模型显著优于正态分布和广义误
+差分布; $K = 2$ 的两区制马尔科夫转换模型共有36个，其余的216个模型为 $K = 3$ 的
+MSGARCH模型。根据参数显著性检验、极大似然值以及AIC和BIC准则的方法，其中最优模型
+为三阶段的MS-GARCH模型，且分布形式分别为sged、std、sged分布。最终选择3阶段的
+GARCH_sstd、GARCH_sstd、GARCH_ged为最优模型。
 
 ### 最优模型选择及其解释
 #### 系数表及其解释
 
-```{r model-best, eval=T,results='markup', cache=T}
+
+```{r model-best, eval=T,results='markup', cache=F}
 spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH")),
                 distribution.spec = list(distribution=c("sged","std","sged")))
 m3=FitML(spec,shibor.rt.r)
