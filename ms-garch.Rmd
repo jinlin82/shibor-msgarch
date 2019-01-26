@@ -435,9 +435,9 @@ knitr::kable(res.table, row.names =F, align = "c", caption="模型估计结果�
 布的混合分布GARCH模型用“MIX(k)-GARCH”表示。前6个模型为单一区制的GARCH模型，假
 设分布为单一分布，即 $K = 1$ ，显然假设分布为t分布的模型显著优于正态分布和广义误
 差分布; $K = 2$ 的两区制马尔科夫转换模型共有36个，其余的216个模型为 $K = 3$ 的
-MSGARCH模型。根据参数显著性检验、极大似然值以及AIC和BIC准则的方法，其中最优模型
-为三阶段的MS-GARCH模型，且分布形式分别为sged、std、sged分布。最终选择3阶段的
-GARCH_sstd、GARCH_sstd、GARCH_ged为最优模型。
+MSGARCH模型。根据参数显著性检验、极大似然值、AIC、BIC以及DIC准则的方法，其中最优
+模型为三阶段的MS-GARCH模型，且分布形式分别为有偏混合正态分布、有偏广义t分布、有
+偏混合正态分布分布。
 
 ### 最优模型选择及其解释
 #### 系数表及其解释
@@ -459,10 +459,17 @@ knitr::kable(res,caption = "MS(3)-GARCH-sged-std-sged模型估计  参数总览"
 似然值、AIC和BIC值分别为`r m3$loglik`、`r summary(m3)$AIC`、`r summary(m3)$BIC`。
 其中，omega 表示3个区制 GARCH_sged、GARCH_std、GARCH_sged 中的常数项，其值分别为
 `r m3$par[1]`、`r m3$par[6]`、`r m3$par[10]`；alpha分别为`r m3$par[2]`、`r m3$par[7]`、
-`r m3$par[11]`，表示模型的ARCH项系数，其值越大，表明当期收益率对下一
-期波动率的影响程度越大；beta分别为`r m3$par[3]`、`r m3$par[8]`、`r m3$par[12]`表
-示模型的GARCH项系数，均小于1，表明上海同业拆解利率隔夜品种价格序列具备有限方差弱
-平稳的特征，即当期波动率对下一期波动率的影响。
+`r m3$par[11]`，表示模型的ARCH项系数，其值越大，表明几乎不存在异方差，拆放利率的
+波动在很大程度可由过去的利率波动和方差确定，即当期收益率对下一期波动率的影响程度
+越大；beta分别为`r m3$par[3]`、`r m3$par[8]`、`r m3$par[12]`表示模型的GARCH项系数，
+均小于1，表明上海同业拆放利率隔夜品种价格序列具备有限方差且属于弱平稳的过程，即前
+期波动对当期影响具有较长的记忆性，外部冲击对波动性的影响随时间逐渐递减。
+
+例如：第一区制中GARCH项系数值为`r m3$par[3]`，大于ARCH项系数`r m3$par[2]`，表明在
+第一状态中，当期对数收益率序列的波动率对下一期的波动率起决定性作用。外部冲击影响
+较大。但在第二区制和第三区制，情况恰好相反，ARCH项系数在下一期的波动率变化中起更
+大作用，ARCH项系数为`r m3$par[7]`和`r m3$par[11]`，远大于GARCH项系数`r m3$par[8]`
+和`r m3$par[12]`，说明当期的收益率主要依赖于前一期的方差。
 
 #### 转移概率矩阵及其解释
 ```{r shibor-pmatrix,eval=T, results='markup'}
@@ -496,47 +503,55 @@ smoothed.prob1 <- State(m3)$SmoothProb[, 1, 1, drop = TRUE]
 smoothed.prob2 <- State(m3)$SmoothProb[, 1, 2, drop = TRUE]
 smoothed.prob3 <- State(m3)$SmoothProb[, 1, 3, drop = TRUE]
 par(mfrow=c(3,1))
-plot(zoo::zoo(smoothed.prob1, order.by = zoo::index(shibor.rt.r)), lty = 1, plot.type = "single", las = 1,main="第一区制" ,ylab = "", xlab = "日期", lwd = 1, cex.axis = 1.5, cex.lab = 1.5)
-plot(zoo::zoo(smoothed.prob2, order.by = zoo::index(shibor.rt.r)), lty = 1, plot.type = "single",las = 1, main="第二区制",ylab = "", xlab = "日期", lwd = 1, cex.axis = 1.5, cex.lab = 1.5)
-plot(zoo::zoo(smoothed.prob3, order.by = zoo::index(shibor.rt.r)), lty = 1, plot.type = "single", las = 1,main="第三区制",ylab = "", xlab = "日期", lwd = 1, cex.axis = 1.5, cex.lab = 1.5)
+plot(zoo::zoo(smoothed.prob1, order.by = zoo::index(shibor.rt.r)), lty = 1, 
+     plot.type = "single", las = 1,main="第一区制" ,ylab = "", xlab = "日期", 
+     lwd = 1, cex.axis = 1.5, cex.lab = 1.5)
+plot(zoo::zoo(smoothed.prob2, order.by = zoo::index(shibor.rt.r)), lty = 1, 
+     plot.type = "single",las = 1, main="第二区制",ylab = "", xlab = "日期", 
+     lwd = 1, cex.axis = 1.5, cex.lab = 1.5)
+plot(zoo::zoo(smoothed.prob3, order.by = zoo::index(shibor.rt.r)), lty = 1, 
+     plot.type = "single", las = 1,main="第三区制",ylab = "", xlab = "日期", 
+     lwd = 1, cex.axis = 1.5, cex.lab = 1.5)
 ```
  
 通过以上分析，分不同区制对各项系数进行比较，各个区制中衰减系数alpha+beta表示过去
 的波动对未来的影响程度，从结果中我们可以看出，模型处于第一状态的衰减系数依次大于
 第二、第三状态，说明第一状态是以更为缓慢的衰减产生更持久的波动。此结果与状态转移
-概率${p_{11}}$ 、${p_{22}}$ 、${p_{33}}$ 的值也是对应的。此外， 第一区制中GARCH
-项系数值为`r m3$par[3]`，大于ARCH项系数`r m3$par[2]`，表明在第一状态中，当期对数
-收益率序列的波动率对下一期的波动率起决定性
-作用，这也说明第一区制的波动率具有聚集效应，具有长期记忆性。但在第二区制和第三区制，
-情况恰好相反，ARCH项系数在下一期的波动率变化中起更大作用，ARCH项系数为`r m3$par[7]`
-和`r m3$par[11]`，远大于GARCH项系数`r m3$par[8]`和`r m3$par[12]`，说明当期
-的收益率对下一期的波动率影响更大。另外，通过计算，可以得到各个取值的无条件方差，
-即当对数收益率处于第一区制GARCH-sged时，无条件波动率为
-`r sqrt(306)*sapply(ExtractStateFit(m3),UncVol)[1]`，呈低频波动；当对数收益率处于
-第二区制GARCH-std时，无条件波动率`r sqrt(306)*sapply(ExtractStateFit(m3),UncVol)[2]`，
+概率${p_{11}}$ 、${p_{22}}$ 、${p_{33}}$的值也是对应的。
+另外，通过计算，可以得到各个取值的无条件方差，即当对数收益率处于第一区制GARCH-sged时
+，无条件波动率为`r sqrt(306)*sapply(ExtractStateFit(m3),UncVol)[1]`，呈低频波动；
+当对数收益率处于第二区制GARCH-std时，无条件波动率`r sqrt(306)*sapply(ExtractStateFit(m3),UncVol)[2]`，
 波动幅度有所增加；当对数收益率处于第三区制GARCH-sged时，其无条件波动率达到最高，
-为`r sqrt(306) * sapply(ExtractStateFit(m3), UncVol)[3]`，呈高频波动，
-可见SHIBOR对数收益率的波动率有逐渐增大的趋势。以上分析综合说明，对数收益率序列存在
+为`r sqrt(306) * sapply(ExtractStateFit(m3), UncVol)[3]`，呈高频波动，可见Shibor
+对数收益率的波动率有逐渐增大的趋势。以上分析综合说明，对数收益率序列存在
 区制的转换，不同区制呈现出不同特征。
 
 ### 最优模型解释和意义
-作为货币市场的“晴雨表”，shibor能够有效反映宏观经济的调控作用。若市场层面上资金
-紧张，投资者对资金的需求量大于资金的供给量，则shibor会持续上升，反之下降。杠杆效
-应分为正杠杆效应和负杠杆效应，综合以上对最优模型系数的解释，非对称系数xi_1和xi_3
-均为正，表明这是一种正杠杆效应，即坏消息使得shibor的上升幅度大于好消息使得shibor
-下降的幅度，这有可能是由于参与交易的主体对于该市场信息不足，以及市场本身机制不完
-善所导致的。商业银行应该重视并且充分利用shibor波动对利好消息和利坏消息的反应的不
-对称性，从而有效控制政策信息、外部市场环境等带来的非预期风险，减小极端风险事件带
-来的不必要的损失。
+作为货币市场的“晴雨表”，Shibor能够有效反映宏观经济的调控作用。若市场层面上资金
+紧张，投资者对资金的需求量大于资金的供给量，则Shibor会持续上升，反之下降。如图，
+通过对不同时刻所处的不同区制的分析以及波动率的表现特征，可以得到隔夜利率在选取的
+时间段内，有如下表现：
 
-2006年9月7日，为提高金融机构自主定价能力，中国人民银行开始建立报价制货币市场基准
-利率(Shibor)。自2010年，央行不断发挥Shibor在货币市场中的作用，推动Shibor产品
-的发展，使得市场影响力不断提高，货币市场交易量大幅度增加。之后，在2013年6月，由
-于政府对外汇资金以及非法债券交易的严厉管控，使得银行间流动性受到挤压，加之季节性
-流动性的需求增加，央行当年并没有及时采取及时措施，使得Shibor经历了一场剧烈的波动，
-导致隔夜Shibor飙升。于2013年6月20日，隔夜Shibor利率创历史新高，为13.444%。此时，
-也符合图1中的时序图，从12年的轨迹可以看出，Shibor主要有上涨、下跌和震荡三种状态，
-分别对应最优模型中的三种不同状态。
+在前半部分即2006年-2010年时间段，有较为显著的集群现象，波动较为剧烈。2006年9月7日，
+为提高金融机构自主定价能力，中国人民银行开始建立报价制货币市场基准利率(Shibor)。
+2007至2008年期间，上海刚刚建立同业拆放市场，政府干预过度，受政府的影响较大，使得
+利率的形成机制处于萌芽阶段，经常出现调整，造成时大时小，波动较大。而且，在2008年
+期间，有一段时期利率疾速下降，是由于金融危机的爆发使得企业贷款资金需求量下降，从
+而商业银行头寸资金需求也随之减小。
+
+在中间阶段即2010-2014年，波动剧烈，有着显著集群的表现。自2010年，央行不断发挥Shibor
+在货币市场中的作用，推动Shibor产品的发展，使得市场影响力不断提高，货币市场交易量
+大幅度增加。之后，在2013年6月，由于政府对外汇资金以及非法债券交易的严厉管控，使得
+银行间流动性受到挤压，加之季节性流动性的需求增加，央行当年并没有及时采取及时措施，
+使得Shibor经历了一场剧烈的波动，导致隔夜Shibor飙升。于2013年6月20日，隔夜Shibor利
+率创历史新高，为13.444%。
+
+在后半阶段即2014-2018年，趋于平稳，不存在波动很大的情况。这是因为同业拆放市场的机
+制逐渐成熟，渐渐完善起来，利率波动表现为显著下降，波动趋于一种平稳的状态。波动率
+与金融市场的稳定性具有密切关联，商业银行应该重视并且充分利用Shibor波动表现，并能
+够准确预测，从而有效控制政策信息、外部市场环境等带来的非预期风险，减小极端风险事
+件带来的不必要的损失。
+
 
 ### VaR 计算
 ```{r, eval=F,echo=F,include=F}
