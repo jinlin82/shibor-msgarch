@@ -1,22 +1,10 @@
-library(zoo)
-library(forecast)
-library(tseries)
-library(xts)
-library(ggplot2)
-library(FinTS)
-library(moments)
-library(devtools)
+
 library(MSGARCH)
-library(fBasics)
-library(timeDate)
-library(timeSeries)
-library(fGarch)
-library(stats)
-library(knitr)
+
 rm(list=ls())
-path <- "E:/github_repo/shibor-msgarch/data" 
+path <- "c:/Works/Working_Paper/2019-01-shibor-msgarch/"
 setwd(path)
-data=read.csv("Shibor_data.csv",header=T)
+data=read.csv("./data/Shibor_data.csv",header=T)
 shibor<-data[,2]
 shibor.date<-as.Date(data[,1])
 
@@ -50,31 +38,51 @@ k.update <- 100  # estimation frequency
 VaR   <- matrix(NA, nrow = n.ots, ncol = length(models))
 y.ots <- matrix(NA, nrow = n.ots, ncol = 1)
 model.fit <- vector(mode = "list", length =length(models))
+
 # iterate over out-of-sample time
 for (i in 1:n.ots) {
-  cat("Backtest - Iteration: ", i, "\n")
-  y.its    <- shibor.rt.r[i:(n.its + i - 1)] # in-sample data 
-  y.ots[i] <- shibor.rt.r[n.its + i]         # out-of-sample data
-  for (j in 1:length(models)){
-    if (k.update == 1 || i %% k.update == 1) {
-      cat("Model is reestimated\n")
-      model.fit[[j]] <- FitML(spec = models[[j]], data = y.its, 
-                              ctr = list(do.se = FALSE)) 
+    cat("Backtest - Iteration: ", i, "\n")
+    y.its    <- shibor.rt.r[i:(n.its + i - 1)] # in-sample data 
+    y.ots[i] <- shibor.rt.r[n.its + i]         # out-of-sample data
+    
+    for (j in 1:length(models)){
+        
+        if (k.update == 1 || i %% k.update == 1) {
+            cat("Model is reestimated\n")
+            model.fit[[j]] <- FitML(spec = models[[j]], data = y.its, 
+                                    ctr = list(do.se = FALSE)) 
+        }
+        
+ # calculate VaR 1-step ahead
+        out <- tryCatch(
+            expr={
+                temp.risk <- Risk(model.fit[[j]]$spec, par = model.fit[[j]]$par,
+                                  data = y.its,
+                                  n.ahead = 1,
+                                  alpha   = alpha,
+                                  do.es   = FALSE,
+                                  do.its  = FALSE)
+            },
+            error = function(e){
+                print(c(i,j))
+                temp.risk$VaR <- NA
+                return(temp.risk)
+            }
+        )
+        
+        temp.risk <- out
+        VaR[i,j] <- temp.risk$VaR
     }
     
-    # calculate VaR 1-step ahead
-    VaR[i,j] <- Risk(model.fit[[j]]$spec, par = model.fit[[j]]$par,
-                     data = y.its,
-                     n.ahead = 1,
-                     alpha   = alpha,
-                     do.es   = FALSE,
-                     do.its  = FALSE)$VaR
-  }
-  
-  v=data.frame(VaR,y.ots) 
 }
+
+v=data.frame(VaR,y.ots)
+
+
 colnames(v)=c("MS(1)-norm","MS(2)-sstd-ged","MS(3)-sged-std-sged","实际值")
 kable(v,caption = "VaR预测值与实际值对比表")
+
+
 
 
 library("zoo")
