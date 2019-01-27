@@ -1,6 +1,4 @@
-
 library(MSGARCH)
-
 rm(list=ls())
 path <- "c:/Works/Working_Paper/2019-01-shibor-msgarch/"
 setwd(path)
@@ -64,23 +62,26 @@ for (i in 1:n.ots) {
                                   do.its  = FALSE)
             },
             error = function(e){
-                print(c(i,j))
-                temp.risk$VaR <- NA
-                return(temp.risk)
+                ## print(c(i,j))
+                ## temp.risk$VaR <- NA
+                ## return(temp.risk)
+                temp.risk <- Risk(FitML(spec = models[[j]], data = y.its, ctr = list(do.se = FALSE)),
+                                  n.ahead = 1,
+                                  alpha   = alpha,
+                                  do.es   = FALSE,
+                                  do.its  = FALSE)
             }
         )
         
         temp.risk <- out
         VaR[i,j] <- temp.risk$VaR
     }
-    
 }
 
 v=data.frame(VaR,y.ots)
-
-
 colnames(v)=c("MS(1)-norm","MS(2)-sstd-ged","MS(3)-sged-std-sged","实际值")
-kable(v,caption = "VaR预测值与实际值对比表")
+write.csv(v, "./result/VaR.csv")
+knitr::kable(v,caption = "VaR预测值与实际值对比表")
 
 
 
@@ -113,4 +114,4 @@ for (j in 1:length(models)) {
 test.print=data.frame(CC.pval,DQ.pval)
 #colnames(test.print)=c("MS(1)-norm","MS(2)-sstd-ged","MS(3)-sged-std-sged")
 #rownames(test.print)=c("CC.pval","DQ.pval")
-kable(test.print,caption = "VaR回测检验")
+knitr::kable(test.print,caption = "VaR回测检验")

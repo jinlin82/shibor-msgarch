@@ -351,7 +351,7 @@ Box2=Box.test(resi,lag=10,type = "Ljung")
 ```
 
 ```{r}
-fit=arima(shibor.rt,order = c(1,0,2))
+fit=stats::arima(shibor.rt,order = c(1,0,2))
 shibor.rt.r<-residuals(fit)
 ```
 
@@ -542,33 +542,46 @@ axis(2,at=seq(1,3))
 vol=Volatility(m3)
 plot(shibor.date[-1],vol,type="l",xlab="时间",ylab="波动率")
 ```
-如图 \@ref(fig:state) 所示，
-通过对不同时刻所处的不同区制的分析以及波动率的表现特征，可以将隔夜拆借利率分为2006年至2010年、2010年至2014年、2014年至2018年三个时间段。
 
-在第一阶段即2006年至2010年间，shibor利率有较为显著的集群现象，波动较为剧烈。主要原因在于2006年9月7日，
-中国人民银行为提高金融机构自主定价能力，开始建立报价制货币市场基准利率(Shibor)。
-而2007年至2008年期间，上海刚刚建立同业拆放市场，利率的形成机制尚处于萌芽阶段，政府为
-了稳定这一新兴市场，会采取较多的干预措施，来扼制市场机制的运作，这使得shibor利率
-时大时小，波动较大。在2008年，由于全球次贷危机的爆发，企业贷款资金需求量
-下降，商业银行头寸资金需求也随之减小，shibor利率在该段时间也发生了急速的下降，
-波动率陡增。
+如图 \@ref(fig:state) 所示，通过对不同时刻所处的不同区制的分析以及波动率的表现特
+征，可以将隔夜拆借利率分为2006年至2010年、2010年至2014年、2014年至2018年三个时间
+段。
 
-在中间阶段即2010年至2015年，shibor利率波动剧烈，有着显著的波动性聚集现象。主要原因是因为自2010年央行不断发挥Shibor
-在货币市场中的作用，推动Shibor产品的发展以来，同业拆借利率的市场影响力不断提高，货币市场交易量
-也大幅度增加。之后，在2013年6月，由于政府对外汇资金以及非法债券交易的严厉管控，使得
-银行间流动性受到挤压，加之季节性流动性的需求增加，央行当年并没有及时采取相应措施，
-使得Shibor经历了一场剧烈的波动，导致隔夜Shibor飙升。于2013年6月20日，隔夜Shibor利
-率创历史新高，为13.444%。
+在第一阶段即2006年至2010年间，shibor利率有较为显著的集群现象，波动较为剧烈。主要
+原因在于2006年9月7日，中国人民银行为提高金融机构自主定价能力，开始建立报价制货币
+市场基准利率(Shibor)。而2007年至2008年期间，上海刚刚建立同业拆放市场，利率的形成
+机制尚处于萌芽阶段，政府为了稳定这一新兴市场，会采取较多的干预措施，来扼制市场机
+制的运作，这使得shibor利率时大时小，波动较大。在2008年，由于全球次贷危机的爆发，
+企业贷款资金需求量下降，商业银行头寸资金需求也随之减小，shibor利率在该段时间也发
+生了急速的下降，波动率陡增。
 
-在第三阶段即2015-2018年，同业拆借市场趋于平稳。这是因为同业拆放市场的机
-制逐渐成熟，日趋完善，利率波动趋于一种平稳的状态。波动率
-与金融市场的稳定性具有密切关联，商业银行应该重视并且充分利用Shibor波动表现，并能
-够准确预测，从而有效控制政策信息、外部市场环境等带来的非预期风险，减小极端风险事
-件带来的不必要的损失。
+在中间阶段即2010年至2015年，shibor利率波动剧烈，有着显著的波动性聚集现象。主要原
+因是因为自2010年央行不断发挥Shibor在货币市场中的作用，推动Shibor产品的发展以来，
+同业拆借利率的市场影响力不断提高，货币市场交易量也大幅度增加。之后，在2013年6月，
+由于政府对外汇资金以及非法债券交易的严厉管控，使得银行间流动性受到挤压，加之季节
+性流动性的需求增加，央行当年并没有及时采取相应措施，使得Shibor经历了一场剧烈的波
+动，导致隔夜Shibor飙升。于2013年6月20日，隔夜Shibor利率创历史新高，为13.444%。
+
+在第三阶段即2015-2018年，同业拆借市场趋于平稳。这是因为同业拆放市场的机制逐渐成
+熟，日趋完善，利率波动趋于一种平稳的状态。波动率与金融市场的稳定性具有密切关联，
+商业银行应该重视并且充分利用Shibor波动表现，并能够准确预测，从而有效控制政策信息、
+外部市场环境等带来的非预期风险，减小极端风险事件带来的不必要的损失。
 
 
 ### VaR 计算
-```{r var-real, eval=T,include=F}
+
+为了对同业拆借市场的利率风险进行控制，可以借助“在险价值”(Value-at-Risk,简称VaR)来
+进行准确测度。在险价值表示在一定置信区间内，受到正常的波动因素影响下，金融资产的
+损失可能存在的最大值，即收益率密度曲线的一个分位点。若 $VaR>r_t$ ,则表明该模型在第t
+天具有良好的表现。
+
+本文选取2006年10月8日至2016年3月14日消除序列自相关后的shibor收益率残差序列作为训
+练集，分别用三个模型：MS(1)-GARCH-norm、MS(2)-GARCH-sstd-ged、
+MS(3)-GARCH-sged-std-sged滚动预测2016年3月15日至2018年12月29日共700天的在险价值，
+以确定当最优区制数。
+VaR回测图如图\@ref(fig:VaR) 所示：
+
+```{r VaR, fig.cap="5%显著性水平下VaR回测图", dev='png',cache=T}
 #求VaR
 n.ots    <- 700 # number of out-of-sample evaluation 
 n.its    <- 2359 # fit sample size
@@ -583,42 +596,13 @@ spec3=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH")),
                  distribution.spec = list(distribution=c("sged","std","sged")))
 models=list(spec1,spec2,spec3)
 
-## Initialization 
-VaR   <- matrix(NA, nrow = n.ots, ncol = length(models))
-y.ots <- matrix(NA, nrow = n.ots, ncol = 1)
-model.fit <- vector(mode = "list", length =length(models))
-# iterate over out-of-sample time
-for (i in 1:n.ots) {
-  y.its    <- shibor.rt.r[i:(n.its + i - 1)] # in-sample data 
-  y.ots[i] <- shibor.rt.r[n.its + i]         # out-of-sample data
-  for (j in 1:length(models)){
-    if (k.update == 1 || i %% k.update == 1) {
-      model.fit[[j]] <- FitML(spec = models[[j]], data = y.its, 
-                              ctr = list(do.se = FALSE)) 
-    }
-    
-    # calculate VaR 1-step ahead
-    VaR[i,j] <- Risk(model.fit[[j]]$spec, par = model.fit[[j]]$par,
-                     data = y.its,
-                     n.ahead = 1,
-                     alpha   = alpha,
-                     do.es   = FALSE,
-                     do.its  = FALSE)$VaR
-  }
-}
-```
-为了对同业拆借市场的利率风险进行控制，可以借助“在险价值”(Value-at-Risk,简称VaR)来
-进行准确测度。在险价值表示在一定置信区间内，受到正常的波动因素影响下，金融资产的
-损失可能存在的最大值，即收益率密度曲线的一个分位点。若 $VaR>r_t$ ,则表明该模型在第t
-天具有良好的表现。
+### Do not run
+## source("VaR.R")
 
-本文选取2006年10月8日至2016年3月14日消除序列自相关后的shibor收益率残差序列作为训
-练集，分别用三个模型：MS(1)-GARCH-norm、MS(2)-GARCH-sstd-ged、
-MS(3)-GARCH-sged-std-sged滚动预测2016年3月15日至2018年12月29日共700天的在险价值，
-以确定当最优区制数。
-VaR回测图如图\@ref(fig:VaR) 所示：
+var.res <- read.csv("./result/VaR.csv")
+VaR <- var.res[,2:4]
+y.ots <- as.vector(var.res[,5])
 
-```{r VaR, fig.cap="5%显著性水平下VaR回测图", dev='png',cache=T}
 library("zoo")
 time.index <- zoo::index(shibor.rt.r)[(n.its + 1):(n.ots + n.its)]
 y_ots <- zoo::zoo(y.ots, order.by = time.index)
@@ -635,27 +619,30 @@ legend("topleft", legend = c("VaR 5% - MS(1)-norm", "VaR 5% - MS(2)-sstd-ged","V
 abline(h = 0)
 ```
 
-图\@ref(fig:VaR) 展示了上海同业拆借利率5%分位数的VaR值。图中的散点表示shibor
-收益率残差序列，红色虚线、绿色实线、蓝色虚线分别表示三个模型预测的相应VaR值。对预测的VaR值进行回测检验，三种检验方式得到的P值如表 \@ref(tab:test) 所示：
+图\@ref(fig:VaR) 展示了上海同业拆借利率5%分位数的VaR值。图中的散点表示shibor收益
+率残差序列，红色虚线、绿色实线、蓝色虚线分别表示三个模型预测的相应VaR值。对预测
+的VaR值进行回测检验，三种检验方式得到的P值如表 \@ref(tab:test) 所示：
 
 ```{r test,eval=T,echo=F,results='markup'}
 library("GAS")
 UC.pval<-CC.pval <- DQ.pval <- vector("double", length(models))
 for (j in 1:length(models)) {
- test <- GAS::BacktestVaR(data  = y.ots,
-                         VaR   = VaR[,j],
-                          alpha = alpha)
-UC.pval[j] <- test$LRuc[2]  
-CC.pval[j] <- test$LRcc[2] 
-DQ.pval[j] <- test$DQ$pvalue} 
+    test <- GAS::BacktestVaR(data  = y.ots,
+                             VaR   = VaR[,j],
+                             alpha = alpha)
+    UC.pval[j] <- test$LRuc[2]  
+    CC.pval[j] <- test$LRcc[2] 
+    DQ.pval[j] <- test$DQ$pvalue} 
 test.print=data.frame(UC.pval,CC.pval,DQ.pval)
 colnames(test.print)=c("MS(1)-norm","MS(2)-sstd-ged","MS(3)-sged-std-sged")
 rownames(test.print)=c("Kupiec检验","条件覆盖测试","动态分位数测试")
 kable(test.print,caption = "VaR回测检验")
 ```
-综合考虑三种检验方式后，仅有三阶段的模型其P值均大于0.1，不拒绝原假设，因此最优区制为三区制。
 
-###预测
+综合考虑三种检验方式后，仅有三阶段的模型其P值均大于0.1，不拒绝原假设，因此最优区
+制为三区制。
+
+### 预测
 
 ```{r pre,eval=T,results='markup', cache=F}
 #预测未来五天的情况
@@ -690,6 +677,7 @@ rownames(pre)=c("2019-1-2","2019-1-3","2019-1-4","2019-1-7","2019-1-8")
 
 kable(pre,caption = "未来五天shibor预测状况")
 ```
+
 # 结论
 
 # 参考文献
