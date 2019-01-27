@@ -503,6 +503,7 @@ smoothed.prob1 <- State(m3)$SmoothProb[, 1, 1, drop = TRUE]
 smoothed.prob2 <- State(m3)$SmoothProb[, 1, 2, drop = TRUE]
 smoothed.prob3 <- State(m3)$SmoothProb[, 1, 3, drop = TRUE]
 par(mfrow=c(3,1))
+par(mar=c(2,3.5,1.5,2))
 plot(zoo::zoo(smoothed.prob1, order.by = zoo::index(shibor.rt.r)), lty = 1, 
      plot.type = "single", las = 1,main="第一区制" ,ylab = "", xlab = "日期", 
      lwd = 1, cex.axis = 1.5, cex.lab = 1.5)
@@ -519,35 +520,48 @@ plot(zoo::zoo(smoothed.prob3, order.by = zoo::index(shibor.rt.r)), lty = 1,
 第二、第三状态，说明第一状态是以更为缓慢的衰减产生更持久的波动。此结果与状态转移
 概率${p_{11}}$ 、${p_{22}}$ 、${p_{33}}$的值也是对应的。
 另外，通过计算，可以得到各个取值的无条件方差，即当对数收益率处于第一区制GARCH-sged时
-，无条件波动率为`r sqrt(306)*sapply(ExtractStateFit(m3),UncVol)[1]`，呈低频波动；
-当对数收益率处于第二区制GARCH-std时，无条件波动率`r sqrt(306)*sapply(ExtractStateFit(m3),UncVol)[2]`，
+，无条件波动率为`r sqrt(250)*sapply(ExtractStateFit(m3),UncVol)[1]`，呈低频波动；
+当对数收益率处于第二区制GARCH-std时，无条件波动率`r sqrt(250)*sapply(ExtractStateFit(m3),UncVol)[2]`，
 波动幅度有所增加；当对数收益率处于第三区制GARCH-sged时，其无条件波动率达到最高，
-为`r sqrt(306) * sapply(ExtractStateFit(m3), UncVol)[3]`，呈高频波动，可见Shibor
+为`r sqrt(250) * sapply(ExtractStateFit(m3), UncVol)[3]`，呈高频波动，可见Shibor
 对数收益率的波动率有逐渐增大的趋势。以上分析综合说明，对数收益率序列存在
-区制的转换，不同区制呈现出不同特征。
+区制的转换，且不同区制呈现出不同特征。
 
 ### 最优模型解释和意义
 作为货币市场的“晴雨表”，Shibor能够有效反映宏观经济的调控作用。若市场层面上资金
-紧张，投资者对资金的需求量大于资金的供给量，则Shibor会持续上升，反之下降。如图，
-通过对不同时刻所处的不同区制的分析以及波动率的表现特征，可以得到隔夜利率在选取的
-时间段内，有如下表现：
+紧张，投资者对资金的需求量大于资金的供给量，则Shibor会持续上升，反之下降。
+```{r state,fig.cap="交易日所处区制及其波动率图", dev="png", cache=T}
+par(mfrow=c(2,1))
+par(mar=c(2,4,1,2))
+#每个交易日所处的区制
+state=State(m3)
+plot(shibor.date[-1],state$Viterbi,type="p",xlab="时间",ylab="所处区制",yaxt="n")
+axis(2,at=seq(1,3))
 
-在前半部分即2006年-2010年时间段，有较为显著的集群现象，波动较为剧烈。2006年9月7日，
-为提高金融机构自主定价能力，中国人民银行开始建立报价制货币市场基准利率(Shibor)。
-2007至2008年期间，上海刚刚建立同业拆放市场，政府干预过度，受政府的影响较大，使得
-利率的形成机制处于萌芽阶段，经常出现调整，造成时大时小，波动较大。而且，在2008年
-期间，有一段时期利率疾速下降，是由于金融危机的爆发使得企业贷款资金需求量下降，从
-而商业银行头寸资金需求也随之减小。
+#每个交易日的波动率
+vol=Volatility(m3)
+plot(shibor.date[-1],vol,type="l",xlab="时间",ylab="波动率")
+```
+如图 \@ref(fig:state) 所示，
+通过对不同时刻所处的不同区制的分析以及波动率的表现特征，可以将隔夜拆借利率分为2006年至2010年、2010年至2014年、2014年至2018年三个时间段。
 
-在中间阶段即2010-2014年，波动剧烈，有着显著集群的表现。自2010年，央行不断发挥Shibor
-在货币市场中的作用，推动Shibor产品的发展，使得市场影响力不断提高，货币市场交易量
-大幅度增加。之后，在2013年6月，由于政府对外汇资金以及非法债券交易的严厉管控，使得
-银行间流动性受到挤压，加之季节性流动性的需求增加，央行当年并没有及时采取及时措施，
+在第一阶段即2006年至2010年间，shibor利率有较为显著的集群现象，波动较为剧烈。主要原因在于2006年9月7日，
+中国人民银行为提高金融机构自主定价能力，开始建立报价制货币市场基准利率(Shibor)。
+而2007年至2008年期间，上海刚刚建立同业拆放市场，利率的形成机制尚处于萌芽阶段，政府为
+了稳定这一新兴市场，会采取较多的干预措施，来扼制市场机制的运作，这使得shibor利率
+时大时小，波动较大。在2008年，由于全球次贷危机的爆发，企业贷款资金需求量
+下降，商业银行头寸资金需求也随之减小，shibor利率在该段时间也发生了急速的下降，
+波动率陡增。
+
+在中间阶段即2010年至2015年，shibor利率波动剧烈，有着显著的波动性聚集现象。主要原因是因为自2010年央行不断发挥Shibor
+在货币市场中的作用，推动Shibor产品的发展以来，同业拆借利率的市场影响力不断提高，货币市场交易量
+也大幅度增加。之后，在2013年6月，由于政府对外汇资金以及非法债券交易的严厉管控，使得
+银行间流动性受到挤压，加之季节性流动性的需求增加，央行当年并没有及时采取相应措施，
 使得Shibor经历了一场剧烈的波动，导致隔夜Shibor飙升。于2013年6月20日，隔夜Shibor利
 率创历史新高，为13.444%。
 
-在后半阶段即2014-2018年，趋于平稳，不存在波动很大的情况。这是因为同业拆放市场的机
-制逐渐成熟，渐渐完善起来，利率波动表现为显著下降，波动趋于一种平稳的状态。波动率
+在第三阶段即2015-2018年，同业拆借市场趋于平稳。这是因为同业拆放市场的机
+制逐渐成熟，日趋完善，利率波动趋于一种平稳的状态。波动率
 与金融市场的稳定性具有密切关联，商业银行应该重视并且充分利用Shibor波动表现，并能
 够准确预测，从而有效控制政策信息、外部市场环境等带来的非预期风险，减小极端风险事
 件带来的不必要的损失。
@@ -620,6 +634,40 @@ CC.pval <- test$LRcc[2]
 DQ.pval <- test$DQ$pvalue 
 ```
 
+###预测
+```{r pre,eval=T,results='markup', cache=F}
+#预测未来五天的情况
+vol.pre=predict(object=m3,nahead=5L,do.return.draw = F)$vol
+pred=simulate(object = m3, nsim = 1L, seed=1234,nahead = 5L, 
+         nburnin = 500L)
+
+##VaR的预测值
+VaR0<- Risk(m3, nahead = 5,
+                 alpha   = 0.05,
+                 do.es   = FALSE,
+                 do.its  = FALSE)$VaR
+
+##实际收益率和shibor预测
+shibor.pre=vector()
+shibor.rt.pre=vector()
+shibor.rt.r.new=c(shibor.rt.r,pred$draw)
+shibor.rt.pre[1]=fit$coef[1]*shibor.rt[3059]+shibor.rt.r.new[3060]+
+                              fit$coef[2]*shibor.rt.r.new[3059]+
+                              fit$coef[3]*shibor.rt.r.new[3058]
+shibor.pre[1]=shibor[3060]*exp(shibor.rt.pre[1])
+for(i in 2:5){
+  shibor.rt.pre[i]=fit$coef[1]*shibor.rt.pre[i-1]+shibor.rt.r.new[i+3059]+
+                                      fit$coef[2]*shibor.rt.r.new[i+3058]+
+                                      fit$coef[3]*shibor.rt.r.new[i+3057]
+  shibor.pre[i]=shibor.pre[i-1]*exp(shibor.rt.pre[i])
+}
+
+pre=data.frame(pred$state,vol.pre,VaR0,shibor.rt.pre,shibor.pre)                                
+colnames(pre)=c("所处状态","条件波动率","VaR","shibor收益率","shibor")
+rownames(pre)=c("2019-1-2","2019-1-3","2019-1-4","2019-1-7","2019-1-8")
+
+kable(pre,caption = "未来五天shibor预测状况")
+```
 # 结论
 
 # 参考文献
