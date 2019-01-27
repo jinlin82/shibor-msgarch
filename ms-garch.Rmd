@@ -612,6 +612,7 @@ for (i in 1:n.ots) {
 }
 colnames(v)=c("MS(1)-norm","MS(2)-sstd-ged","MS(3)-sged-std-sged","实际值")
 kable(v,caption = "VaR预测值与实际值对比表")
+k函数
 ```
 为了对同业拆借市场的利率风险进行控制，可以借助“在险价值”(Value-at-Risk,简称VaR)来
 进行准确测度。在险价值表示在一定置信区间内，受到正常的波动因素影响下，金融资产的
@@ -622,7 +623,7 @@ kable(v,caption = "VaR预测值与实际值对比表")
 练集，滚动预测2016年3月15日至2018年12月29日共700天的在险价值，VaR回测图如 图
 \@ref(fig:fig-ts99) 所示：
 
-```{r fig-ts99, fig.cap="5%显著性水平下VaR回测图", dev='png',cache=T}
+```{r fig-ts99, fig.cap="5%显著性水平下VaR回测图", dev='png',cache=T,}
 library("zoo")
 time.index <- zoo::index(shibor.rt.r)[(n.its + 1):(n.ots + n.its)]
 y_ots <- zoo::zoo(y.ots, order.by = time.index)
