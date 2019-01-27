@@ -106,4 +106,3 @@ test.print=data.frame(CC.pval,DQ.pval)
 #colnames(test.print)=c("MS(1)-norm","MS(2)-sstd-ged","MS(3)-sged-std-sged")
 #rownames(test.print)=c("CC.pval","DQ.pval")
 kable(test.print,caption = "VaR回测检验")
-#k函数
