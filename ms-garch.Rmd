@@ -635,10 +635,10 @@ legend("topleft", legend = c("VaR 5% - MS(1)-norm", "VaR 5% - MS(2)-sstd-ged","V
 abline(h = 0)
 ```
 
-图\@ref(fig:fig-ts99) 展示了上海同业拆借利率5%分位数的VaR值。图中的散点表示shibor
+图\@ref(fig:VaR) 展示了上海同业拆借利率5%分位数的VaR值。图中的散点表示shibor
 收益率残差序列，红色虚线、绿色实线、蓝色虚线分别表示三个模型预测的相应VaR值。对预测的VaR值进行回测检验，三种检验方式得到的P值如表 \@ref(tab:test) 所示：
 
-```{r test,eval=T,echo=F,include=T}
+```{r test,eval=T,echo=F,results='markup'}
 library("GAS")
 UC.pval<-CC.pval <- DQ.pval <- vector("double", length(models))
 for (j in 1:length(models)) {
@@ -654,7 +654,9 @@ rownames(test.print)=c("Kupiec检验","条件覆盖测试","动态分位数测�
 kable(test.print,caption = "VaR回测检验")
 ```
 综合考虑三种检验方式后，仅有三阶段的模型其P值均大于0.1，不拒绝原假设，因此最优区制为三区制。
+
 ###预测
+
 ```{r pre,eval=T,results='markup', cache=F}
 #预测未来五天的情况
 vol.pre=predict(object=m3,nahead=5L,do.return.draw = F)$vol
