@@ -148,7 +148,6 @@ $$\left\{ {\begin{array}{l}
 是均值为0，方差相等的独立同分布随机变量序列。第一个方程为均值方程，用来描述收益
 率序列条件均值的变化过程，第三个方程为方差方程，用来描述收益率序列条件方差
 的变化过程。
-
 ## MS-GARCH模型介绍
 
 设 ${y_t:t=1,2,…,T}$ 表示金融时间序列，共有 $k$ 个区制, $y_t$ 所处的区制
@@ -442,7 +441,6 @@ MSGARCH模型。根据参数显著性检验、极大似然值、AIC、BIC以及D
 ### 最优模型选择及其解释
 #### 系数表及其解释
 
-
 ```{r model-best, eval=T,results='markup', cache=F}
 spec=CreateSpec(variance.spec = list(model=c("sGARCH","sGARCH","sGARCH")),
                 distribution.spec = list(distribution=c("sged","std","sged")))
@@ -472,6 +470,7 @@ knitr::kable(res,caption = "MS(3)-GARCH-sged-std-sged模型估计  参数总览"
 和`r m3$par[12]`，说明当期的收益率主要依赖于前一期的方差。
 
 #### 转移概率矩阵及其解释
+
 ```{r shibor-pmatrix,eval=T, results='markup'}
 P1=1-sum(m3$par[15:16])
 P2=1-sum(m3$par[17:18])
@@ -498,6 +497,7 @@ $p_{11}$ 的值为`r m3$par [15]`，表示在t时刻所处状态为第一区制�
 益率更倾向于在不同状态之间转化，且状态的无条件概率几乎相同。
 
 #### 平滑概率图及其解释
+
 ```{r smooth-probability,fig.cap="平滑概率图", dev="png", cache=T}
 smoothed.prob1 <- State(m3)$SmoothProb[, 1, 1, drop = TRUE]
 smoothed.prob2 <- State(m3)$SmoothProb[, 1, 2, drop = TRUE]
@@ -530,6 +530,7 @@ plot(zoo::zoo(smoothed.prob3, order.by = zoo::index(shibor.rt.r)), lty = 1,
 ### 最优模型解释和意义
 作为货币市场的“晴雨表”，Shibor能够有效反映宏观经济的调控作用。若市场层面上资金
 紧张，投资者对资金的需求量大于资金的供给量，则Shibor会持续上升，反之下降。
+
 ```{r state,fig.cap="交易日所处区制及其波动率图", dev="png", cache=T}
 par(mfrow=c(2,1))
 par(mar=c(2,4,1,2))
