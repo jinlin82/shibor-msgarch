@@ -568,7 +568,7 @@ plot(shibor.date[-1],vol,type="l",xlab="时间",ylab="波动率")
 
 
 ### VaR 计算
-```{r var-real, eval=T,results='markup', cache=F}
+```{r var-real, eval=T,include=F}
 #求VaR
 n.ots    <- 700 # number of out-of-sample evaluation 
 n.its    <- 2359 # fit sample size
@@ -589,12 +589,10 @@ y.ots <- matrix(NA, nrow = n.ots, ncol = 1)
 model.fit <- vector(mode = "list", length =length(models))
 # iterate over out-of-sample time
 for (i in 1:n.ots) {
-  cat("Backtest - Iteration: ", i, "\n")
   y.its    <- shibor.rt.r[i:(n.its + i - 1)] # in-sample data 
   y.ots[i] <- shibor.rt.r[n.its + i]         # out-of-sample data
   for (j in 1:length(models)){
     if (k.update == 1 || i %% k.update == 1) {
-      cat("Model is reestimated\n")
       model.fit[[j]] <- FitML(spec = models[[j]], data = y.its, 
                               ctr = list(do.se = FALSE)) 
     }
@@ -607,12 +605,7 @@ for (i in 1:n.ots) {
                      do.es   = FALSE,
                      do.its  = FALSE)$VaR
   }
-  
-  v=data.frame(VaR,y.ots) 
 }
-colnames(v)=c("MS(1)-norm","MS(2)-sstd-ged","MS(3)-sged-std-sged","实际值")
-kable(v,caption = "VaR预测值与实际值对比表")
-k函数
 ```
 为了对同业拆借市场的利率风险进行控制，可以借助“在险价值”(Value-at-Risk,简称VaR)来
 进行准确测度。在险价值表示在一定置信区间内，受到正常的波动因素影响下，金融资产的
@@ -620,10 +613,12 @@ k函数
 天具有良好的表现。
 
 本文选取2006年10月8日至2016年3月14日消除序列自相关后的shibor收益率残差序列作为训
-练集，滚动预测2016年3月15日至2018年12月29日共700天的在险价值，VaR回测图如 图
-\@ref(fig:fig-ts99) 所示：
+练集，分别用三个模型：MS(1)-GARCH-norm、MS(2)-GARCH-sstd-ged、
+MS(3)-GARCH-sged-std-sged滚动预测2016年3月15日至2018年12月29日共700天的在险价值，
+以确定当最优区制数。
+VaR回测图如图\@ref(fig:VaR) 所示：
 
-```{r fig-ts99, fig.cap="5%显著性水平下VaR回测图", dev='png',cache=T,}
+```{r VaR, fig.cap="5%显著性水平下VaR回测图", dev='png',cache=T}
 library("zoo")
 time.index <- zoo::index(shibor.rt.r)[(n.its + 1):(n.ots + n.its)]
 y_ots <- zoo::zoo(y.ots, order.by = time.index)
@@ -638,27 +633,27 @@ lines(VaR[,3], type = 'l', col = "blue", lwd = 2)
 legend("topleft", legend = c("VaR 5% - MS(1)-norm", "VaR 5% - MS(2)-sstd-ged","VaR 5% - MS(3)-sged-std-sged"), 
        col = c("red","green","blue"), lwd = 3, cex = 1, lty = c("dashed", "solid"))
 abline(h = 0)
-title("5%显著性水下下的VaR", cex.main = 1.5)
 ```
 
 图\@ref(fig:fig-ts99) 展示了上海同业拆借利率5%分位数的VaR值。图中的散点表示shibor
-收益率残差序列，虚线表示预测的VaR值。对预测的VaR值进行回测检验，
+收益率残差序列，红色虚线、绿色实线、蓝色虚线分别表示三个模型预测的相应VaR值。对预测的VaR值进行回测检验，三种检验方式得到的P值如表 \@ref(tab:test) 所示：
 
-```{r,eval=T,echo=F,include=F}
+```{r test,eval=T,echo=F,include=T}
 library("GAS")
-CC.pval <- DQ.pval <- vector("double", length(models))
+UC.pval<-CC.pval <- DQ.pval <- vector("double", length(models))
 for (j in 1:length(models)) {
  test <- GAS::BacktestVaR(data  = y.ots,
                          VaR   = VaR[,j],
                           alpha = alpha)
-CC.pval[j] <- test$LRcc[2]      
+UC.pval[j] <- test$LRuc[2]  
+CC.pval[j] <- test$LRcc[2] 
 DQ.pval[j] <- test$DQ$pvalue} 
-test.print=data.frame(CC.pval,DQ.pval)
-#colnames(test.print)=c("MS(1)-norm","MS(2)-sstd-ged","MS(3)-sged-std-sged")
-#rownames(test.print)=c("CC.pval","DQ.pval")
+test.print=data.frame(UC.pval,CC.pval,DQ.pval)
+colnames(test.print)=c("MS(1)-norm","MS(2)-sstd-ged","MS(3)-sged-std-sged")
+rownames(test.print)=c("Kupiec检验","条件覆盖测试","动态分位数测试")
 kable(test.print,caption = "VaR回测检验")
 ```
-
+综合考虑三种检验方式后，仅有三阶段的模型其P值均大于0.1，不拒绝原假设，因此最优区制为三区制。
 ###预测
 ```{r pre,eval=T,results='markup', cache=F}
 #预测未来五天的情况
