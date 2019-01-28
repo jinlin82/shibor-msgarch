@@ -639,7 +639,8 @@ for (j in 1:length(models)) {
 test.print=t(data.frame(UC.pval,CC.pval,DQ.pval))
 colnames(test.print)=c("MS(1)-norm","MS(2)-sstd-ged","MS(3)-sged-std-sged")
 rownames(test.print)=c("Kupiec检验","条件覆盖测试","动态分位数测试")
-kable(test.print,align = "c",caption = "VaR回测检验")
+kable(test.print,align = "c",caption = "VaR回测检验",
+      digits=4)
 ```
 
 从表 \@ref(tab:test) 可以看出，仅有MS(3)模型在三种检验方式中均不拒绝原假设，表明该种类模
@@ -681,11 +682,12 @@ pre=data.frame(pred$state,vol.pre,VaR0,shibor.rt.pre,shibor.pre)
 colnames(pre)=c("所处状态","条件波动率","VaR","Shibor收益率","Shibor")
 rownames(pre)=c("2019-1-2","2019-1-3","2019-1-4","2019-1-7","2019-1-8")
 
-kable(pre,align="c",caption = "未来五天Shibor预测状况")
+kable(pre,align="c",caption = "未来五天Shibor预测状况",
+      digits=4)
 
 ```
 
-表\@ref(tab:test)列出了2019-1-2到2019-1-8日的Shibor预测状况，结果表明，在未来5天内，虽然条
+表 \@ref(tab:pre) 列出了2019-1-2到2019-1-8日的Shibor预测状况，结果表明，在未来5天内，虽然条
 件波动率逐渐下降，但VaR有较大幅度的变化，最小的VaR出现在2019-1-2，对应最大的条件波动率，最
 大的VaR出现在2019-1-8，对应最小的条件波动率；在预测期同时存在区制2和区制3的相互转换，且区制
 3保持正收益率，区制2保持负收益率,相应的对应Shibor利率，则表现为先经历4天的下降后，最后一天利
