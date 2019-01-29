@@ -692,7 +692,7 @@ $$\widehat {{\beta _{LS}}} = {\left( {X'X} \right)^{ - 1}}X'\left( {H - \lambda 
 
 从[@eq:DQ5]式中，便可提出动态分位数测试的测试统计量：
 
-$$DQ = \frac{{{{\widehat {{\beta _{LS}}}}^\prime }X'X\widehat {{\beta _{LS}}}}}{{\lambda \left( {1 - \lambda } \right)}}\mathop  \sim \limits^{asy} \chi _{p + n + 2}^2$$
+$$DQ = \frac{{{{\widehat {{\beta _{LS}}}}^\prime }X'X\widehat {{\beta _{LS}}}}}{{\lambda \left( {1 - \lambda } \right)}}\mathop  \sim \limits^{asy} \chi _{p + n + 2}^2$$[@eq:DQ6]
 
 综合以上三种检验方式得到的检验统计量及其对应的P值如表 \@ref(tab:test) 所示：
 
