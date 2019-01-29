@@ -574,7 +574,7 @@ plot(shibor.date[-1],vol,type="l",xlab="时间",ylab="波动率")
 为了对同业拆借市场的利率风险进行控制，可以借助“在险价值”(Value-at-Risk,简称VaR)来
 进行准确测度。在险价值表示在一定置信区间内，受到正常的波动因素影响下，金融资产的
 损失可能存在的最大值，即收益率密度曲线的一个分位点。若 $VaR>r_t$ ,则表明该模型在第t
-天具有良好的表现。
+天具有良好的表现，预测成功。
 
 本文选取2006年10月8日至2016年3月14日消除序列自相关后的Shibor收益率残差序列作为训
 练集，分别用三个模型：MS(1)-GARCH-norm、MS(2)-GARCH-sstd-ged、
@@ -625,27 +625,113 @@ abline(h = 0)
 可以看出用MS(1)模型预测的VaR值整体较平稳，而MS(3)模型预测的VaR值则波动较为明显，表明三阶段
 模型对新信息的反应更为敏感，可以及时的抓住风险。但一个好的模型不仅需要对风险信息有迅速的
 反应，也需要保证较高的准确率。因此采用Kupiec检验、条件覆盖测试、动态分位数测试三种检验方法
-对三种模型预测的VaR值进行回测检验，三种检验方式得到的检验统计量对应的P值如表 \@ref(tab:test) 所示：
+分别对三种模型预测的VaR值进行回测检验。下面对三种检验方法做简单的介绍。
+
+假定总天数为T天，理论失败率为p，则失败频数服从二项分布 $B(T,p)$ 。若真实失败天数为x天，
+则真实失败率为 $\widehat p=x/T$ 。设原假设为 $H_0:p=\widehat p $ ，备择假设为 $H_1:p \ne \widehat p $  ，
+构造检验统计量以验证失败率是否拒绝原假设，若不拒绝原假设，表明模型预测准确，反之则表明模型
+失真，不能准确度量原序列的风险程度。Kupiec(1995)提出构造似然比方程来对假设进行检验的方
+式[@kupiec1995]。似然比方程为：
+
+$$LR_{POF} =  - 2\ln \left( {\frac{{{{\left( {1 - p} \right)}^{T - x}}{p^x}}}{{{{\left[ {1 - \left( {\frac{x}{T}} \right)} \right]}^{T - x}}{{\left( {\frac{x}{T}} \right)}^x}}}} \right)$${#eq:kupiec}
+
+[@eq:kupiec] 式在原假设成立的情况下，检验统计量 $LR_{POF}$ 服从自由度为1的 ${\chi ^2}$ 分布。
+
+由于Kupiec检验只关注失败的次数，相当于该方法默认风险事件会随着时间的推移而均匀发生。但是在现
+实情况中，往往快速连续发生的巨大损失更有可能导致灾难性事件的发生。因此Christoffersen(1998)
+提出了条件覆盖测试检验方法[@Christoffersen98]。该检验方式首先指定两种状态，当实际收益率超过
+VaR时为状态1，反之为状态0。然后设 $n_{ij}$ 表示由状态i发生到状态j发生所间隔的天数，$\pi _i$
+表示当前一个状态为i时，当前状态为1的概率，即：
+
+$${\pi _0} = \frac{{{n_{01}}}}{{{n_{00}} + {n_{01}}}},{\pi _1} = \frac{{{n_{11}}}}{{{n_{10}} + {n_{11}}}}\;\;\;and\;\;{\pi} = \frac{{{n_{01}} + {n_{11}}}}{{{n_{00}} + {n_{01}} + {n_{10}} + {n_{11}}}}$$
+
+此时可构造新的似然比函数 $LR_{ind}$：
+
+$$L{R_{ind}} =  - 2\ln \left( {\frac{{{{\left( {1 - \pi } \right)}^{{n_{00}} + {n_{10}}}}{\pi ^{{n_{01}} + {n_{11}}}}}}{{{{\left( {1 - {\pi _0}} \right)}^{{n_{00}}}}{\pi _0}^{{n_{01}}}{{\left( {1 - {\pi _1}} \right)}^{{n_{10}}}}{\pi _1}^{{n_{11}}}}}} \right)$$
+
+将该似然比函数 $LR_{ind}$ 与Kupiec检验的似然比函数结合，即
+
+$$LR_{cc}=LR_{POF}+LR_{ind}$$
+
+新的检验统计量 $LR_{cc}$ 不仅可以检验模型的准确率，还可以检验实际收益率超过VaR的情况是
+否独立，即条件覆盖性。 $LR_{cc}$ 在原假设成立的情况下服从自由度为2的 ${\chi ^2}$ 分布。
+
+为了使模型预测更加准确，Engle和Manganelli(2004)提出了还可以检验不同置信水平下模型预测效果的
+动态分位数测试[@engle2004]。
+
+设 $H_t=I(r_t<VaR_t)$ 对于 $F_{t-1}$ ，假定有
+
+$$E\left( {{H_t}\left| {{F_{t - 1}}} \right.} \right) = \lambda $${#eq:DQ1}
+
+[@eq:DQ1]式中，对 $i \in {F_{t - 1}}$ ，任何 $\omega _{t-1}$ 都与 $H_t$ 不相关。Engle
+和Manganelli认为VaR的条件超越非常重要，因此，令 $\left\{ {Va{R_t}} \right\}_{t = 1}^T$ 为
+一个独立同分布的随机变量序列，则有：
+
+$$Va{R_t} = \left\{ {\begin{array}{*{20}{c}}
+K&{p = 1 - \lambda }\\
+{ - K}&{p = \lambda }
+\end{array}} \right.$${#eq:DQ2}
+
+[@eq:DQ2]式中K对 $VaR_t$ 也施加了一个限制条件，超出序列就表现为一个正确的条件覆盖。为了有效
+的测试[@eq:DQ2]式，对于在 $F_{t-1}$ 中的解释变量可以回归 $H_t$ ，建立如下方程：
+
+$${H_t} = {\lambda _0} + \sum\limits_{i = 1}^p {{\beta _i}{H_{t - i}}}  + {\beta _{p + 1}}\widehat {Va{R_t}} + \sum\limits_{j = 1}^n {{\beta _{p + j + 1}}f\left( {{\omega _{t - 1}},j} \right)}  + {u_t}$${#eq:DQ3}
+ 
+对于[@eq:DQ3]式，建立检验假设， $\lambda_0=\lambda$ 和 $\beta_i=0,i=1,\ldots,n+p+1$ 。
+采用向量则可以为：
+
+$$H - \lambda v = X\beta  + u,\;\;\;{u_t} = \left\{ {\begin{array}{*{20}{c}}
+{ - \lambda }&{p = 1 - \lambda }\\
+\lambda &{p = \lambda }
+\end{array}} \right.$${#eq:DQ4}
+
+[@eq:DQ4]式中 $\beta=\lambda_0-\lambda$ ，$v$ 是一个单位矩阵。在原假设[@eq:DQ2]式的基础上
+回归方程没有解释作用，比如在原假设 $\beta=0$ 的情况下，虽然回归方程与在原假设下的因变量不
+具有相关性，但可以建立CLT形式：
+
+$$\widehat {{\beta _{LS}}} = {\left( {X'X} \right)^{ - 1}}X'\left( {H - \lambda v} \right)\mathop  \sim \limits^{asy} N\left[ {0,{{\left( {X'X} \right)}^{ - 1}}\lambda \left( {1 - \lambda } \right)} \right]$${#eq:DQ5}
+
+从[@eq:DQ5]式中，便可提出动态分位数测试的测试统计量：
+
+$$DQ = \frac{{{{\widehat {{\beta _{LS}}}}^\prime }X'X\widehat {{\beta _{LS}}}}}{{\lambda \left( {1 - \lambda } \right)}}\mathop  \sim \limits^{asy} \chi _{p + n + 2}^2$$[@eq:DQ6]
+
+综合以上三种检验方式得到的检验统计量及其对应的P值如表 \@ref(tab:test) 所示：
 
 ```{r test,eval=T,echo=F,results='markup'}
 library("GAS")
-UC.pval<-CC.pval <- DQ.pval <- vector("double", length(models))
+POF<-UC<-CC<-DQ<-UC.pval<-CC.pval <- DQ.pval <- vector("double", length(models))
+
+pof=function(x){
+  k=0
+  for(i in 1:700){
+    if(x[i]>shibor.rt.r[2359+i]){k=k+1}
+  }
+  k/700
+}
+
 for (j in 1:length(models)) {
     test <- GAS::BacktestVaR(data  = y.ots,
                              VaR   = VaR[,j],
                              alpha = alpha)
+    UC[j] <- test$LRuc[1]  
+    CC[j] <- test$LRcc[1] 
+    DQ[j] <- test$DQ$stat
+    
     UC.pval[j] <- test$LRuc[2]  
     CC.pval[j] <- test$LRcc[2] 
-    DQ.pval[j] <- test$DQ$pvalue} 
-test.print=t(data.frame(UC.pval,CC.pval,DQ.pval))
+    DQ.pval[j] <- test$DQ$pvalue
+    
+    POF[j]=pof(VaR[,j])} 
+test.print=t(data.frame(POF,UC,UC.pval,CC,CC.pval,DQ,DQ.pval))
 colnames(test.print)=c("MS(1)-norm","MS(2)-sstd-ged","MS(3)-sged-std-sged")
-rownames(test.print)=c("Kupiec检验","条件覆盖测试","动态分位数测试")
+rownames(test.print)=c("失败率","Kupiec检验统计量","Kupiec检验P值","条件覆盖测试统计量",
+                       "条件覆盖测试P值","动态分位数测试统计量","动态分位数测试P值")
 kable(test.print,align = "c",caption = "VaR回测检验",
       digits=4)
 ```
 
 从表 \@ref(tab:test) 可以看出，仅有MS(3)模型在三种检验方式中均不拒绝原假设，表明该种类模
-型是最优模型，即Shibor收益率拟合MS-GARCH模型时的最佳区制数为3。
+型预测更加准确，即Shibor收益率拟合MS-GARCH模型时的最佳区制数为3。
 
 ### 预测
 
@@ -657,30 +743,32 @@ kable(test.print,align = "c",caption = "VaR回测检验",
 vol.pre=predict(object=m3,nahead=5L,do.return.draw = F)$vol
 pred=simulate(object = m3, nsim = 1L, seed=1234,nahead = 5L, 
          nburnin = 500L)
-
+dist=c("sged",rep("std",3),"sged")
 ##VaR的预测值
 VaR0<- Risk(m3, nahead = 5,
                  alpha   = 0.05,
                  do.es   = FALSE,
                  do.its  = FALSE)$VaR
+shibor.1=c(2.3000,1.9680,1.6490,1.4470,1.4140,1.5670)
+shibor.rt.1=diff(log(shibor.1))
 
 ##实际收益率和shibor预测
-shibor.pre=vector()
+#shibor.pre=vector()
 shibor.rt.pre=vector()
 shibor.rt.r.new=c(shibor.rt.r,pred$draw)
 shibor.rt.pre[1]=fit$coef[1]*shibor.rt[3059]+shibor.rt.r.new[3060]+
                               fit$coef[2]*shibor.rt.r.new[3059]+
                               fit$coef[3]*shibor.rt.r.new[3058]
-shibor.pre[1]=shibor[3060]*exp(shibor.rt.pre[1])
+#shibor.pre[1]=shibor[3060]*exp(shibor.rt.pre[1])
 for(i in 2:5){
   shibor.rt.pre[i]=fit$coef[1]*shibor.rt.pre[i-1]+shibor.rt.r.new[i+3059]+
                                       fit$coef[2]*shibor.rt.r.new[i+3058]+
                                       fit$coef[3]*shibor.rt.r.new[i+3057]
-  shibor.pre[i]=shibor.pre[i-1]*exp(shibor.rt.pre[i])
+  #shibor.pre[i]=shibor.pre[i-1]*exp(shibor.rt.pre[i])
 }
-
-pre=data.frame(pred$state,vol.pre,VaR0,shibor.rt.pre,shibor.pre)                                
-colnames(pre)=c("所处状态","条件波动率","VaR","Shibor收益率","Shibor")
+shibor.rt.r.1=shibor.rt.1-shibor.rt.pre
+pre=data.frame(pred$state,dist,vol.pre,VaR0,shibor.rt.r.1)                                
+colnames(pre)=c("所处状态","分布","条件波动率","VaR","提取自相关后的真实收益率")
 rownames(pre)=c("2019-1-2","2019-1-3","2019-1-4","2019-1-7","2019-1-8")
 
 kable(pre,align="c",caption = "未来五天Shibor预测状况",
@@ -690,9 +778,8 @@ kable(pre,align="c",caption = "未来五天Shibor预测状况",
 
 表 \@ref(tab:pre) 列出了2019-1-2到2019-1-8日的Shibor预测状况，结果表明，在未来5天内，虽然条
 件波动率逐渐下降，但VaR有较大幅度的变化，最小的VaR出现在2019-1-2，对应最大的条件波动率，最
-大的VaR出现在2019-1-8，对应最小的条件波动率；在预测期同时存在区制2和区制3的相互转换，且区制
-3保持正收益率，区制2保持负收益率,相应的对应Shibor利率，则表现为先经历4天的下降后，最后一天利
-率开始回升。
+大的VaR出现在2019-1-8，对应最小的条件波动率；在预测期同时存在区制2和区制3的相互转换，区制3
+对应有偏广义误差分布，区制2对应广义t分布；表最后一列是真实的消除自相关后的收益率。
 
 # 结论
 
