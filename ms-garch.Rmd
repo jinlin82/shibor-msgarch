@@ -656,30 +656,32 @@ kable(test.print,align = "c",caption = "VaR回测检验",
 vol.pre=predict(object=m3,nahead=5L,do.return.draw = F)$vol
 pred=simulate(object = m3, nsim = 1L, seed=1234,nahead = 5L, 
          nburnin = 500L)
-
+dist=c("sged",rep("std",3),"sged")
 ##VaR的预测值
 VaR0<- Risk(m3, nahead = 5,
                  alpha   = 0.05,
                  do.es   = FALSE,
                  do.its  = FALSE)$VaR
+shibor.1=c(2.3000,1.9680,1.6490,1.4470,1.4140,1.5670)
+shibor.rt.1=diff(log(shibor.1))
 
 ##实际收益率和shibor预测
-shibor.pre=vector()
+#shibor.pre=vector()
 shibor.rt.pre=vector()
 shibor.rt.r.new=c(shibor.rt.r,pred$draw)
 shibor.rt.pre[1]=fit$coef[1]*shibor.rt[3059]+shibor.rt.r.new[3060]+
                               fit$coef[2]*shibor.rt.r.new[3059]+
                               fit$coef[3]*shibor.rt.r.new[3058]
-shibor.pre[1]=shibor[3060]*exp(shibor.rt.pre[1])
+#shibor.pre[1]=shibor[3060]*exp(shibor.rt.pre[1])
 for(i in 2:5){
   shibor.rt.pre[i]=fit$coef[1]*shibor.rt.pre[i-1]+shibor.rt.r.new[i+3059]+
                                       fit$coef[2]*shibor.rt.r.new[i+3058]+
                                       fit$coef[3]*shibor.rt.r.new[i+3057]
-  shibor.pre[i]=shibor.pre[i-1]*exp(shibor.rt.pre[i])
+  #shibor.pre[i]=shibor.pre[i-1]*exp(shibor.rt.pre[i])
 }
-
-pre=data.frame(pred$state,vol.pre,VaR0,shibor.rt.pre,shibor.pre)                                
-colnames(pre)=c("所处状态","条件波动率","VaR","Shibor收益率","Shibor")
+shibor.rt.r.1=shibor.rt.1-shibor.rt.pre
+pre=data.frame(pred$state,dist,vol.pre,VaR0,shibor.rt.r.1)                                
+colnames(pre)=c("所处状态","分布","条件波动率","VaR","提取自相关后的真实收益率")
 rownames(pre)=c("2019-1-2","2019-1-3","2019-1-4","2019-1-7","2019-1-8")
 
 kable(pre,align="c",caption = "未来五天Shibor预测状况",
@@ -689,9 +691,8 @@ kable(pre,align="c",caption = "未来五天Shibor预测状况",
 
 表 \@ref(tab:pre) 列出了2019-1-2到2019-1-8日的Shibor预测状况，结果表明，在未来5天内，虽然条
 件波动率逐渐下降，但VaR有较大幅度的变化，最小的VaR出现在2019-1-2，对应最大的条件波动率，最
-大的VaR出现在2019-1-8，对应最小的条件波动率；在预测期同时存在区制2和区制3的相互转换，且区制
-3保持正收益率，区制2保持负收益率,相应的对应Shibor利率，则表现为先经历4天的下降后，最后一天利
-率开始回升。
+大的VaR出现在2019-1-8，对应最小的条件波动率；在预测期同时存在区制2和区制3的相互转换，区制3
+对应有偏广义误差分布，区制2对应广义t分布；表最后一列是真实的消除自相关后的收益率。
 
 # 结论
 
