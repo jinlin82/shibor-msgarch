@@ -352,7 +352,7 @@ Box2=Box.test(resi,lag=10,type = "Ljung")
 
 ```{r}
 fit=stats::arima(shibor.rt,order = c(1,0,2))
-shibor.rt.r<-residuals(fit)
+shibor.rt.r<-stats::residuals(fit)
 ```
 
 对上海银行间隔夜拆放利率进行自相关检验，这里分别运用自相关系数、偏自相关系数和
