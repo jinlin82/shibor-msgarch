@@ -469,6 +469,7 @@ knitr::kable(res,caption = "MS(3)-GARCH-sged-std-sged模型估计  参数总览"
 和第三区制，情况恰好相反，ARCH项系数在下一期的波动率变化中起更大作用，ARCH项系数
 为`r m3$par[7]`和`r m3$par[11]`，远大于GARCH项系数`r m3$par[8]`
 和`r m3$par[12]`，说明外部冲击影响较大。
+
 #### 转移概率矩阵及其解释
 
 ```{r shibor-pmatrix,eval=T, results='markup'}
